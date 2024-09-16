@@ -3,4 +3,4 @@
 
 npx prettier --write .
 npx lint-staged
-npm test -- --onlyChanged
+npm test

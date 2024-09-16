@@ -1,6 +1,5 @@
 {
   "env": {
-    "jest": true,
     "node": true
   },
   "extends": [
@@ -9,12 +8,6 @@
     "plugin:@typescript-eslint/recommended"
   ],
   "overrides": [
-    {
-      "env": {
-        "jest": true
-      },
-      "files": ["**/*.spec.ts", "**/*.test.ts"]
-    },
     {
       "files": ["src/db/migrations/*.ts"],
       "rules": {

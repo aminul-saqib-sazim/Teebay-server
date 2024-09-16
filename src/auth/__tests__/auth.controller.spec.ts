@@ -11,7 +11,7 @@ describe("AuthController", () => {
   let controller: AuthController;
 
   const mockAuthService = {
-    createAccessToken: jest.fn(),
+    createAccessToken: vi.fn(),
   };
 
   beforeEach(async () => {
@@ -33,7 +33,7 @@ describe("AuthController", () => {
   });
 
   afterEach(() => {
-    jest.resetAllMocks();
+    vi.resetAllMocks();
   });
 
   it("should login a user", async () => {

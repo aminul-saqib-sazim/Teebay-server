@@ -12,11 +12,11 @@ describe("AuthService", () => {
   let service: AuthService;
 
   const mockJwtService = {
-    signAsync: jest.fn(),
+    signAsync: vi.fn(),
   };
 
   const mockUsersService = {
-    findByEmailOrThrow: jest.fn(),
+    findByEmailOrThrow: vi.fn(),
   };
 
   const rolesService = {};
@@ -44,7 +44,7 @@ describe("AuthService", () => {
   });
 
   afterEach(() => {
-    jest.resetAllMocks();
+    vi.resetAllMocks();
   });
 
   it("should validate an user", async () => {

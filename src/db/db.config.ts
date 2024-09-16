@@ -20,6 +20,8 @@ const ormConfig = defineConfig({
 
   extensions: [Migrator, SeedManager],
 
+  ...(process.env.NODE_ENV === "test" ? { dynamicImportProvider: (id) => import(id) } : {}),
+
   validate: true,
   strict: true,
   debug: true,
