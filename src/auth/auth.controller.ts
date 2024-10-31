@@ -3,7 +3,7 @@ import { Controller, Post, UseGuards, UseInterceptors } from "@nestjs/common";
 import { User } from "@/common/entities/users.entity";
 import { ResponseTransformInterceptor } from "@/common/interceptors/response-transform.interceptor";
 
-import { LoginResponseDto } from "./auth.dtos";
+import { SignInResponse } from "./auth.dtos";
 import { makeTokenizedUser } from "./auth.helpers";
 import { AuthService } from "./auth.service";
 import { CurrentUser } from "./decorators/current-user.decorator";
@@ -15,8 +15,8 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @UseInterceptors(ResponseTransformInterceptor)
-  @Post("login")
-  async login(@CurrentUser() user: User): Promise<LoginResponseDto> {
+  @Post("sign-in")
+  async signIn(@CurrentUser() user: User): Promise<SignInResponse> {
     const accessToken = await this.authService.createAccessToken(user);
 
     return {

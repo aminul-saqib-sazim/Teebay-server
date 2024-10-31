@@ -1,6 +1,6 @@
 import { TokenizedUser } from "@/users/users.dtos";
 
-export class LoginResponseDto {
+export class SignInResponse {
   accessToken!: string;
   user!: TokenizedUser;
 }

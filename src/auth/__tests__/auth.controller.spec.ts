@@ -4,7 +4,7 @@ import { AuthController } from "@/auth/auth.controller";
 import { AuthService } from "@/auth/auth.service";
 import { UsersService } from "@/users/users.service";
 
-import { MOCK_JWT_TOKEN, getMockLoginResponse } from "./auth.mocks";
+import { MOCK_JWT_TOKEN, getMockSignInResponse } from "./auth.mocks";
 import { MOCK_USER } from "./users.mocks";
 
 describe("AuthController", () => {
@@ -36,11 +36,11 @@ describe("AuthController", () => {
     vi.resetAllMocks();
   });
 
-  it("should login a user", async () => {
+  it("should sign in a user", async () => {
     mockAuthService.createAccessToken.mockResolvedValue(MOCK_JWT_TOKEN);
 
-    const response = await controller.login(MOCK_USER);
+    const response = await controller.signIn(MOCK_USER);
     expect(mockAuthService.createAccessToken).toHaveBeenCalledWith(MOCK_USER);
-    expect(response).toEqual(getMockLoginResponse(MOCK_USER));
+    expect(response).toEqual(getMockSignInResponse(MOCK_USER));
   });
 });

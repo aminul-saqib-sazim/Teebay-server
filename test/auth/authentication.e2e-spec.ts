@@ -39,10 +39,10 @@ describe("Authentication (e2e)", () => {
       await createUserInDb(dbService);
     });
 
-    describe("POST /auth/login", () => {
+    describe("POST /auth/sign-in", () => {
       it("should return 201 Created with proper credentials", () =>
         request(httpServer)
-          .post("/auth/login")
+          .post("/auth/sign-in")
           .send(`email=${MOCK_AUTH_EMAIL}&password=${MOCK_AUTH_PASS}`)
           .expect(HttpStatus.CREATED)
           .expect(({ body }) => {
@@ -53,12 +53,12 @@ describe("Authentication (e2e)", () => {
 
       it("should return 401 Unauthorized with wrong credentials", () =>
         request(httpServer)
-          .post("/auth/login")
+          .post("/auth/sign-in")
           .send(`email=${MOCK_AUTH_EMAIL}&password=wrongpassword`)
           .expect(HttpStatus.UNAUTHORIZED));
 
       it("Without authentication params, gets back 401 Unauthenticated", () =>
-        request(httpServer).post("/auth/login").expect(HttpStatus.UNAUTHORIZED));
+        request(httpServer).post("/auth/sign-in").expect(HttpStatus.UNAUTHORIZED));
     });
   });
 });

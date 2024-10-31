@@ -42,9 +42,9 @@ describe("Authorization", () => {
   beforeAll(async () => {
     @Controller("dummy")
     class DummyController {
-      @Get("/requires-login")
+      @Get("/requires-sign-in")
       @UseGuards(JwtAuthGuard)
-      public requiresLogin() {
+      public requiresSignIn() {
         return "You're logged in!";
       }
 
@@ -90,10 +90,10 @@ describe("Authorization", () => {
     await authorizationApp.close();
   });
 
-  describe("GET /dummy/requires-login", () => {
+  describe("GET /dummy/requires-sign-in", () => {
     it("should return 401 Unauthorized without proper token", () =>
       request(authorizationHttpServer)
-        .get("/dummy/requires-login")
+        .get("/dummy/requires-sign-in")
         .expect(HttpStatus.UNAUTHORIZED));
 
     it("should return 200 OK with proper token", async () => {
@@ -103,12 +103,12 @@ describe("Authorization", () => {
       });
 
       const { body } = await request(authorizationHttpServer)
-        .post("/auth/login")
+        .post("/auth/sign-in")
         .send(`email=${MOCK_AUTH_EMAIL}&password=${MOCK_AUTH_PASS}`)
         .expect(HttpStatus.CREATED);
 
       return request(authorizationHttpServer)
-        .get("/dummy/requires-login")
+        .get("/dummy/requires-sign-in")
         .set("Authorization", `Bearer ${body.data.accessToken}`)
         .expect(HttpStatus.OK)
         .expect(({ text }) => expect(text).toEqual("You're logged in!"));
@@ -125,7 +125,7 @@ describe("Authorization", () => {
       });
 
       const { body } = await request(authorizationHttpServer)
-        .post("/auth/login")
+        .post("/auth/sign-in")
         .send(`email=${email}&password=${MOCK_AUTH_PASS}`)
         .expect(HttpStatus.CREATED);
 
@@ -145,7 +145,7 @@ describe("Authorization", () => {
       });
 
       const { body } = await request(authorizationHttpServer)
-        .post("/auth/login")
+        .post("/auth/sign-in")
         .send(`email=${email}&password=${MOCK_AUTH_PASS}`)
         .expect(HttpStatus.CREATED);
 
@@ -167,7 +167,7 @@ describe("Authorization", () => {
       });
 
       const { body } = await request(authorizationHttpServer)
-        .post("/auth/login")
+        .post("/auth/sign-in")
         .send(`email=${email}&password=${MOCK_AUTH_PASS}`)
         .expect(HttpStatus.CREATED);
 
@@ -187,7 +187,7 @@ describe("Authorization", () => {
       });
 
       const { body } = await request(authorizationHttpServer)
-        .post("/auth/login")
+        .post("/auth/sign-in")
         .send(`email=${email}&password=${MOCK_AUTH_PASS}`)
         .expect(HttpStatus.CREATED);
 

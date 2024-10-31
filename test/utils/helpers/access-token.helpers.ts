@@ -11,7 +11,7 @@ export async function getAccessToken(
   password = MOCK_AUTH_PASS,
 ) {
   const { body } = await request(httpServer)
-    .post("/auth/login")
+    .post("/auth/sign-in")
     .send({ email, password })
     .expect(HttpStatus.CREATED);
 

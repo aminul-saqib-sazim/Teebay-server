@@ -53,7 +53,7 @@ const ormConfig = defineConfig({
 
   migrations: {
     tableName: "mikro_orm_migrations",
-    path: "./dist/db/migrations",
+    path: "./dist/src/db/migrations",
     pathTs: "./src/db/migrations",
     glob: "!(*.d).{js,ts}",
     transactional: true,
@@ -74,7 +74,7 @@ const ormConfig = defineConfig({
   },
 
   seeder: {
-    path: "./dist/db/seeders",
+    path: "./dist/src/db/seeders",
     pathTs: "./src/db/seeders",
     glob: "!(*.d).{js,ts}",
     emit: "js",
