@@ -18,10 +18,10 @@ export class S3Service {
   ) {}
 
   private getFolderName() {
-    const nodeEnv = this.config.get("NODE_ENV");
-    const isLocalEnv = isLocal(nodeEnv);
+    const stageEnv = this.config.get("STAGE_ENV");
+    const isLocalEnv = isLocal(stageEnv);
 
-    return isLocalEnv ? "" : nodeEnv === "development" ? "dev" : "prod";
+    return isLocalEnv ? "" : stageEnv === "development" ? "dev" : "prod";
   }
 
   private getUploadFilename(key: string) {
@@ -51,5 +51,22 @@ export class S3Service {
       infer: true,
     })!;
     return getSignedUrl(this.s3Client, command, { expiresIn: expiryInMinutes * 60 });
+  }
+
+  async uploadFileBuffer(key: string, type: string, buffer: Buffer): Promise<string> {
+    this.logger.log(`Uploading ${type} buffer with key ${key}`);
+    const uploadFilename = this.getUploadFilename(key);
+
+    const command = new PutObjectCommand({
+      Bucket: this.bucketName,
+      Key: uploadFilename,
+      Body: buffer,
+      ContentType: type,
+      ACL: "public-read",
+    });
+
+    await this.s3Client.send(command);
+
+    return this.getPresignedUrl(key, type);
   }
 }

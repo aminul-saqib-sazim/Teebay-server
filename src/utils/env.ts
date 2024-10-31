@@ -1,2 +1,2 @@
-export const isLocal = (nodeEnv: string | undefined) =>
-  nodeEnv === "local" || nodeEnv === "" || !nodeEnv;
+export const isLocal = (stageEnv: string | undefined) =>
+  stageEnv === "local" || stageEnv === "" || !stageEnv;

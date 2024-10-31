@@ -16,7 +16,7 @@ import { FileUploadsService } from "./file-uploads.service";
     {
       provide: S3Service,
       useFactory: (config: ConfigService) => {
-        const isLocalEnv = isLocal(config.get("NODE_ENV"));
+        const isLocalEnv = isLocal(config.get("STAGE_ENV"));
 
         const bucketName = config.get("AWS_S3_BUCKET_NAME");
         const region = config.get("AWS_S3_REGION");
@@ -44,5 +44,6 @@ import { FileUploadsService } from "./file-uploads.service";
       inject: [ConfigService],
     },
   ],
+  exports: [FileUploadsService],
 })
 export class FileUploadsModule {}

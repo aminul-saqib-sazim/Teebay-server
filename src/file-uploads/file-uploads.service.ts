@@ -16,4 +16,10 @@ export class FileUploadsService {
       }),
     );
   }
+
+  async uploadFileBuffer(name: string, type: string, fileBuffer: Buffer) {
+    const signedUrl = await this.s3Service.uploadFileBuffer(name, type, fileBuffer);
+
+    return { name, type, signedUrl };
+  }
 }

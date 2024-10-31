@@ -20,6 +20,8 @@ services:
       dockerfile: infra/dockerfiles/Dockerfile
     ports:
       - 3000:3000
+    volumes:
+      - ${CERTS_PATH:-/dev/null}:/usr/src/certs:ro
     depends_on:
       - project_db
     env_file: "./.env"

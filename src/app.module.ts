@@ -9,8 +9,10 @@ import { AuthModule } from "./auth/auth.module";
 import { AppLoggerMiddleware } from "./common/middleware/request-logger.middleware";
 import { validate } from "./common/validators/env.validator";
 import ormConfig from "./db/db.config";
+import { DocumentSigningModule } from "./document-signing/document-signing.module";
 import { FileUploadsModule } from "./file-uploads/file-uploads.module";
 import { HealthModule } from "./health/health.module";
+import { PdfGenerationModule } from "./pdf-generation/pdf-generation.module";
 import { RolesModule } from "./roles/roles.module";
 import { UserProfilesModule } from "./user-profiles/user-profiles.module";
 import { UsersModule } from "./users/users.module";
@@ -37,6 +39,8 @@ import { WebsocketExampleModule } from "./websocket-example/websocket-example.mo
     WebsocketExampleModule,
     UserProfilesModule,
     HealthModule,
+    PdfGenerationModule,
+    DocumentSigningModule,
   ],
   controllers: [],
   providers: [Logger],

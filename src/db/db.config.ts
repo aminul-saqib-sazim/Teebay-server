@@ -20,28 +20,35 @@ const ormConfig = defineConfig({
 
   extensions: [Migrator, SeedManager],
 
-  ...(process.env.NODE_ENV === "test" ? { dynamicImportProvider: (id) => import(id) } : {}),
+  ...(process.env.STAGE_ENV === "test" ? { dynamicImportProvider: (id) => import(id) } : {}),
 
   validate: true,
   strict: true,
   debug: true,
 
-  ...(process.env.NODE_ENV === "production"
-    ? {
-        driverOptions: {
-          connection: {
+  driverOptions: {
+    connection: {
+      keepAlive: true,
+      ...(process.env.STAGE_ENV === "production"
+        ? {
             ssl: {
               ca: fs
                 .readFileSync(path.resolve(process.cwd(), "certs/db-ca-certificate.crt"))
                 .toString(),
             },
-          },
-        },
-      }
-    : {}),
+          }
+        : {}),
+    },
+  },
 
   schemaGenerator: {
     disableForeignKeys: false,
+  },
+
+  pool: {
+    min: 0,
+    max: 10,
+    idleTimeoutMillis: 10000,
   },
 
   migrations: {

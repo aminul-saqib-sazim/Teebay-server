@@ -1,5 +1,6 @@
 export interface IEnvironmentVariables {
   NODE_ENV: string;
+  STAGE_ENV: "local" | "development" | "production" | "test";
   DATABASE_URL: string;
   JWT_SECRET: string;
   JWT_TOKEN_LIFETIME: string;
@@ -9,5 +10,7 @@ export interface IEnvironmentVariables {
   AWS_S3_REGION: string;
   AWS_S3_ENDPOINT: string;
   AWS_S3_BUCKET_NAME: string;
+  AWS_S3_BUCKET_URL: string;
   AWS_S3_PRESIGN_URL_EXPIRY_IN_MINUTES: number;
+  DOCUSEAL_API_KEY?: string;
 }

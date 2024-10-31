@@ -28,7 +28,7 @@ async function bootstrap() {
 
   app.use(helmet());
 
-  if (process.env.NODE_ENV === "local") {
+  if (process.env.STAGE_ENV === "local") {
     const swaggerConfig = new DocumentBuilder()
       .setTitle("Project API")
       .setDescription("The BE API for Project")

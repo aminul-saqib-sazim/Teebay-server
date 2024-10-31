@@ -8,7 +8,9 @@ import { mockDeep } from "vitest-mock-extended";
 import { AppModule } from "@/app.module";
 import { S3Service } from "@/common/aws/s3-service/s3-service";
 import ormConfig from "@/db/db.config";
+import { DocumentSigningService } from "@/document-signing/document-signing.service";
 import { FileUploadsService } from "@/file-uploads/file-uploads.service";
+import { PdfGenerationService } from "@/pdf-generation/pdf-generation.service";
 
 export const bootstrapTestServer = async () => {
   const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -18,6 +20,10 @@ export const bootstrapTestServer = async () => {
     .useValue(mockDeep<S3Service>({ funcPropSupport: true }))
     .overrideProvider(FileUploadsService)
     .useValue(mockDeep<FileUploadsService>({ funcPropSupport: true }))
+    .overrideProvider(PdfGenerationService)
+    .useValue(mockDeep<PdfGenerationService>({ funcPropSupport: true }))
+    .overrideProvider(DocumentSigningService)
+    .useValue(mockDeep<DocumentSigningService>({ funcPropSupport: true }))
     .compile();
 
   const app = moduleFixture.createNestApplication();

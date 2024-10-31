@@ -53,9 +53,9 @@ export function getAllowedOrigins(): (
 }
 
 export function getAllowedOriginWildcards(): string[] {
-  const envStage = process.env.NODE_ENV;
+  const stageEnv = process.env.STAGE_ENV;
 
-  switch (envStage) {
+  switch (stageEnv) {
     case "local":
       return LOCAL_ALLOWED_URLS_WILDCARDS;
 

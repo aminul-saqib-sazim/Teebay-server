@@ -19,6 +19,19 @@ For local development and testing, please create the following files at the root
 
 You can follow `env.example` to specify which env variables are needed for the project as a guideline, and the above two files can be created based off of this file.
 
+### Environment Variables Validation
+We use `class-validator` to validate env files before the server starts up to avoid any cases of missing environment variables. They are tracked in these two files.
+- `src/common/interfaces/environment-variables.interface.ts`
+- `src/common/validators/env.validator.ts`
+
+When adding new environment variables, please add them to these files so that your project can remain functional through environment variable changes.
+
+## Template Modules
+The template contains code that might not be relevant for your project's needs. Such modules might include:
+- PDF generation
+- Document signing
+
+If not needed, please remove the said modules from the code when your initiating your project. Make sure to remove any irrelevant environment variables as well by modifying `src/common/interfaces/environment-variables.interface.ts` and `src/common/validators/env.validator.ts` files.
 
 ## Conventions
 
@@ -87,6 +100,11 @@ $ yarn run start
 # watch mode
 $ yarn run start:dev
 
+# watch mode with local s3 bucket, requires docker daemon. This command waits for a certain amount
+# after calling `docker compose up`. You may need to press Q in order for the server to start up
+# after localstack is initialized.
+$ AWS_PROFILE=localstack_dev npm run start:dev:bucket
+
 # production mode
 $ yarn run start:prod
 ```
@@ -99,28 +117,26 @@ AWS_PROFILE=localstack_dev yarn run start:dev
 
 ## Database Migrations
 
+The `dev` database is used during development and `test` database is used for running tests. 
+
 ```bash
-# Drop all tables, run all migrations, seed the db with the specified seeder class in the script
+# Drop all tables, run all migrations, seed the db
 $ yarn run db:migration:fresh:dev
 
-# Drop all tables, run all migrations, doesn't seed the db
-$ yarn run db:migration:fresh:test 
-
 # Migrate up to latest
-$ yarn run db:migration:up
+$ yarn run db:migration:up:dev
 
 # Migrate down by one
-$ yarn run db:migration:down
+$ yarn run db:migration:down:dev
 
 # Create a new migration file (requires --name) (use --blank to skip autogeneration)
 $ yarn run db:migration:create
 
-# Seed database with dev variables and DatabaseSeeder
-For seeding, we need to pass in the name of the seeder class. This is not supported by `yarn`, so we use `npm`
-$ npm run db:seed:dev -- -c "DevDatabaseSeeder"
+# Seed database with local variables. You must pass in the class name
+$ yarn run db:seed:local --class="ExampleSeederClass"
 
 # Run all migrations and seeding with test variables
-$ yarn run db:migration:test
+$ yarn run db:migration:fresh:test
 ```
 
 ## Commit Convention
@@ -141,3 +157,8 @@ $ yarn run test:e2e
 # test coverage
 $ yarn run test:cov
 ```
+
+## Docker Deployment
+
+### Certificate Handling
+For production deployments that require SSL certificates (e.g., for managed database connections), you can mount your certificates directory using the `CERTS_PATH` environment variable.
