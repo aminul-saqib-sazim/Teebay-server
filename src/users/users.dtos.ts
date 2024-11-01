@@ -1,3 +1,5 @@
+import { ApiProperty } from "@nestjs/swagger";
+
 import { Type } from "class-transformer";
 import {
   IsEmail,
@@ -63,8 +65,13 @@ export class UserProfileResponse {
 
 export class TokenizedUser implements ITokenizedUser {
   id!: number;
+
   claimId!: number;
+
+  @ApiProperty({ enum: EUserRole, enumName: "EUserRole" })
   claim!: EUserRole;
+
   userProfileId!: number;
+
   email!: string;
 }
