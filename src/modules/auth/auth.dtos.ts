@@ -1,4 +1,4 @@
-import { TokenizedUser } from "@/users/users.dtos";
+import { TokenizedUser } from "@/modules/users/users.dtos";
 
 export class SignInResponse {
   accessToken!: string;

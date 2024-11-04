@@ -1,6 +1,6 @@
 import { Entity, EntityRepositoryType, OneToOne, PrimaryKey, Property, Rel } from "@mikro-orm/core";
 
-import { UsersRepository } from "@/users/users.repository";
+import { UsersRepository } from "@/modules/users/users.repository";
 
 import { CustomBaseEntity } from "./custom-base.entity";
 import { UserProfile } from "./user-profiles.entity";

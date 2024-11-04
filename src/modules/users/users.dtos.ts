@@ -11,11 +11,11 @@ import {
   ValidateNested,
 } from "class-validator";
 
-import { ITokenizedUser } from "@/auth/auth.interfaces";
 import { UserProfile } from "@/common/entities/user-profiles.entity";
 import { User } from "@/common/entities/users.entity";
 import { EUserRole } from "@/common/enums/roles.enums";
-import { RoleResponse } from "@/roles/roles.dtos";
+import { ITokenizedUser } from "@/modules/auth/auth.interfaces";
+import { RoleResponse } from "@/modules/roles/roles.dtos";
 
 export class UserProfileDto implements Pick<UserProfile, "firstName" | "lastName"> {
   @IsString()

@@ -8,8 +8,8 @@ import {
   HttpCode,
 } from "@nestjs/common";
 
-import { JwtAuthGuard } from "@/auth/guards/jwt-auth.guard";
 import { ResponseTransformInterceptor } from "@/common/interceptors/response-transform.interceptor";
+import { JwtAuthGuard } from "@/modules/auth/guards/jwt-auth.guard";
 
 import { DocumentSigningService } from "./document-signing.service";
 import { TDocusealWebhookPayload } from "./document-signing.types";

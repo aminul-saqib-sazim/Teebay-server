@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
 
-import { FileUploadsModule } from "@/file-uploads/file-uploads.module";
+import { FileUploadsModule } from "@/modules/file-uploads/file-uploads.module";
 
 import { PdfGenerationService } from "./pdf-generation.service";
 

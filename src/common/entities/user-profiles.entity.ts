@@ -10,7 +10,7 @@ import {
   EntityRepositoryType,
 } from "@mikro-orm/core";
 
-import { UserProfilesRepository } from "@/user-profiles/user-profiles.repository";
+import { UserProfilesRepository } from "@/modules/user-profiles/user-profiles.repository";
 
 import { CustomBaseEntity } from "./custom-base.entity";
 import { Role } from "./roles.entity";

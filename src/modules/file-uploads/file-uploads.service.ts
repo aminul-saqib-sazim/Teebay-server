@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 
 import { S3Service } from "@/common/aws/s3-service/s3-service";
-import { PresignedUrlFileDto } from "@/file-uploads/file-uploads.dtos";
+import { PresignedUrlFileDto } from "@/modules/file-uploads/file-uploads.dtos";
 
 @Injectable()
 export class FileUploadsService {

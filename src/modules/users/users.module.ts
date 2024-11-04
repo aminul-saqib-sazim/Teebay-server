@@ -3,7 +3,7 @@ import { Module } from "@nestjs/common";
 import { MikroOrmModule } from "@mikro-orm/nestjs";
 
 import { User } from "@/common/entities/users.entity";
-import { RolesModule } from "@/roles/roles.module";
+import { RolesModule } from "@/modules/roles/roles.module";
 
 import { UsersController } from "./users.controller";
 import { UsersSerializer } from "./users.serializer";

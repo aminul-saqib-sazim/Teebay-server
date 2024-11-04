@@ -4,11 +4,12 @@ import { EntityManager, IDatabaseDriver, Connection, MikroORM } from "@mikro-orm
 
 import { faker } from "@faker-js/faker";
 import { io, Socket } from "socket.io-client";
+import { DoneCallback } from "vitest";
 
 import {
   EGatewayIncomingEvent,
   EGatewayOutgoingEvent,
-} from "@/websocket-example/websocket-example.enum";
+} from "@/modules/websocket-example/websocket-example.enum";
 
 import { seedPermissionsData } from "../auth/auth.helpers";
 import { bootstrapTestServer } from "../utils/bootstrap";
@@ -69,7 +70,7 @@ describe("Websocket Example Gateway (E2E", () => {
   });
 
   describe("unauthenticated user", () => {
-    it("unauthenticated users cannot connect", (done) => {
+    it("unauthenticated users cannot connect", (done: DoneCallback) => {
       socket = io(defaultSocketUrl, {
         ...defaultSocketConnectConfig,
         auth: {
@@ -90,7 +91,7 @@ describe("Websocket Example Gateway (E2E", () => {
   });
 
   describe("authenticated user", () => {
-    it("authenticated users can connect", (done) => {
+    it("authenticated users can connect", (done: DoneCallback) => {
       socket = io(defaultSocketUrl, {
         ...defaultSocketConnectConfig,
         auth: {
@@ -111,7 +112,7 @@ describe("Websocket Example Gateway (E2E", () => {
   });
 
   describe("ping event", () => {
-    it("responds to ping event", (done) => {
+    it("responds to ping event", (done: DoneCallback) => {
       socket = io(defaultSocketUrl, {
         ...defaultSocketConnectConfig,
         auth: {

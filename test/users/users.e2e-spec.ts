@@ -7,7 +7,7 @@ import request from "supertest";
 
 import { UserProfile } from "@/common/entities/user-profiles.entity";
 import { EUserRole } from "@/common/enums/roles.enums";
-import { RegisterUserDto } from "@/users/users.dtos";
+import { RegisterUserDto } from "@/modules/users/users.dtos";
 
 import { seedPermissionsData } from "../auth/auth.helpers";
 import { bootstrapTestServer } from "../utils/bootstrap";

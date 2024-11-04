@@ -1,5 +1,5 @@
-import { ITokenizedUser } from "@/auth/auth.interfaces";
 import { User } from "@/common/entities/users.entity";
+import { ITokenizedUser } from "@/modules/auth/auth.interfaces";
 
 export function makeTokenizedUser(user: User): ITokenizedUser {
   return {

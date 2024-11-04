@@ -5,7 +5,7 @@ import { EntityRepository } from "@mikro-orm/postgresql";
 import { Role } from "@/common/entities/roles.entity";
 import { UserProfile } from "@/common/entities/user-profiles.entity";
 
-import { User } from "../common/entities/users.entity";
+import { User } from "../../common/entities/users.entity";
 import { RegisterUserDto } from "./users.dtos";
 
 @Injectable()

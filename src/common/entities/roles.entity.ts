@@ -2,7 +2,7 @@ import { Collection, Entity, Enum, ManyToMany, PrimaryKey } from "@mikro-orm/cor
 import { EntityRepositoryType } from "@mikro-orm/postgresql";
 
 import { EUserRole } from "@/common/enums/roles.enums";
-import { RolesRepository } from "@/roles/roles.repository";
+import { RolesRepository } from "@/modules/roles/roles.repository";
 
 import { CustomBaseEntity } from "./custom-base.entity";
 import { Permission } from "./permissions.entity";

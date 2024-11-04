@@ -14,17 +14,17 @@ import { MikroOrmModule } from "@mikro-orm/nestjs";
 import { faker } from "@faker-js/faker";
 import request from "supertest";
 
-import { AuthModule } from "@/auth/auth.module";
-import { Permissions } from "@/auth/decorators/permissions.decorator";
-import { Roles } from "@/auth/decorators/roles.decorator";
-import { JwtAuthGuard } from "@/auth/guards/jwt-auth.guard";
-import { PermissionsGuard } from "@/auth/guards/permissions.guard";
-import { RolesGuard } from "@/auth/guards/roles.guard";
 import { EUserRole, EPermission } from "@/common/enums/roles.enums";
 import ormConfig from "@/db/db.config";
-import { RolesModule } from "@/roles/roles.module";
-import { RolesService } from "@/roles/roles.service";
-import { UsersModule } from "@/users/users.module";
+import { AuthModule } from "@/modules/auth/auth.module";
+import { Permissions } from "@/modules/auth/decorators/permissions.decorator";
+import { Roles } from "@/modules/auth/decorators/roles.decorator";
+import { JwtAuthGuard } from "@/modules/auth/guards/jwt-auth.guard";
+import { PermissionsGuard } from "@/modules/auth/guards/permissions.guard";
+import { RolesGuard } from "@/modules/auth/guards/roles.guard";
+import { RolesModule } from "@/modules/roles/roles.module";
+import { RolesService } from "@/modules/roles/roles.service";
+import { UsersModule } from "@/modules/users/users.module";
 
 import { bootstrapTestServer } from "../utils/bootstrap";
 import { truncateTables } from "../utils/db";

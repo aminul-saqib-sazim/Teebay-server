@@ -1,9 +1,9 @@
 import { Injectable, CanActivate, ExecutionContext } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 
-import { ITokenizedUser } from "@/auth/auth.interfaces";
 import { EPermission } from "@/common/enums/roles.enums";
-import { RolesService } from "@/roles/roles.service";
+import { ITokenizedUser } from "@/modules/auth/auth.interfaces";
+import { RolesService } from "@/modules/roles/roles.service";
 
 import { PERMISSIONS_KEY } from "../decorators/permissions.decorator";
 

@@ -1,7 +1,10 @@
 import { Body, Controller, Post, UseInterceptors } from "@nestjs/common";
 
 import { ResponseTransformInterceptor } from "@/common/interceptors/response-transform.interceptor";
-import { PresignedUrlFileDto, PresignedUrlResponse } from "@/file-uploads/file-uploads.dtos";
+import {
+  PresignedUrlFileDto,
+  PresignedUrlResponse,
+} from "@/modules/file-uploads/file-uploads.dtos";
 
 import { FileUploadsService } from "./file-uploads.service";
 

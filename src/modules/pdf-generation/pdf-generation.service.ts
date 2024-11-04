@@ -4,7 +4,7 @@ import { PDFCheckBox, PDFDocument, PDFForm, PDFRadioGroup, PDFTextField } from "
 import dayjs from "dayjs";
 import { readFile } from "fs/promises";
 
-import { FileUploadsService } from "@/file-uploads/file-uploads.service";
+import { FileUploadsService } from "@/modules/file-uploads/file-uploads.service";
 
 import {
   ICheckboxMapper,

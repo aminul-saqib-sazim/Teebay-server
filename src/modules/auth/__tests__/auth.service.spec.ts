@@ -1,9 +1,9 @@
 import { JwtService } from "@nestjs/jwt";
 import { Test, TestingModule } from "@nestjs/testing";
 
-import { AuthService } from "@/auth/auth.service";
-import { RolesService } from "@/roles/roles.service";
-import { UsersService } from "@/users/users.service";
+import { AuthService } from "@/modules/auth/auth.service";
+import { RolesService } from "@/modules/roles/roles.service";
+import { UsersService } from "@/modules/users/users.service";
 
 import { MOCK_JWT_TOKEN, MOCK_USER_PASSWORD } from "./auth.mocks";
 import { MOCK_USER } from "./users.mocks";

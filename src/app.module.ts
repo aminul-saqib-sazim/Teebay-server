@@ -5,18 +5,18 @@ import { MikroOrmModule } from "@mikro-orm/nestjs";
 
 import { OpenTelemetryModule } from "@metinseylan/nestjs-opentelemetry";
 
-import { AuthModule } from "./auth/auth.module";
 import { AppLoggerMiddleware } from "./common/middleware/request-logger.middleware";
 import { validate } from "./common/validators/env.validator";
 import ormConfig from "./db/db.config";
-import { DocumentSigningModule } from "./document-signing/document-signing.module";
-import { FileUploadsModule } from "./file-uploads/file-uploads.module";
-import { HealthModule } from "./health/health.module";
-import { PdfGenerationModule } from "./pdf-generation/pdf-generation.module";
-import { RolesModule } from "./roles/roles.module";
-import { UserProfilesModule } from "./user-profiles/user-profiles.module";
-import { UsersModule } from "./users/users.module";
-import { WebsocketExampleModule } from "./websocket-example/websocket-example.module";
+import { AuthModule } from "./modules/auth/auth.module";
+import { DocumentSigningModule } from "./modules/document-signing/document-signing.module";
+import { FileUploadsModule } from "./modules/file-uploads/file-uploads.module";
+import { HealthModule } from "./modules/health/health.module";
+import { PdfGenerationModule } from "./modules/pdf-generation/pdf-generation.module";
+import { RolesModule } from "./modules/roles/roles.module";
+import { UserProfilesModule } from "./modules/user-profiles/user-profiles.module";
+import { UsersModule } from "./modules/users/users.module";
+import { WebsocketExampleModule } from "./modules/websocket-example/websocket-example.module";
 
 @Module({
   imports: [

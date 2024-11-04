@@ -5,8 +5,8 @@ import * as argon2 from "argon2";
 
 import { ARGON2_OPTIONS } from "@/common/config/argon2.config";
 import { User } from "@/common/entities/users.entity";
-import { RolesService } from "@/roles/roles.service";
-import { UsersService } from "@/users/users.service";
+import { RolesService } from "@/modules/roles/roles.service";
+import { UsersService } from "@/modules/users/users.service";
 
 import { INVALID_USER_CREDENTIALS } from "./auth.constants";
 import { IJwtPayload } from "./auth.interfaces";
