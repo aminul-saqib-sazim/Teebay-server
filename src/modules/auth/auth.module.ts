@@ -5,6 +5,8 @@ import { PassportModule } from "@nestjs/passport";
 import { RolesModule } from "@/modules/roles/roles.module";
 import { UsersModule } from "@/modules/users/users.module";
 
+import { EmailsModule } from "../emails/emails.module";
+import { VerificationRequestsModule } from "../verification-requests/verification-requests.module";
 import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
 import { JwtStrategy } from "./strategies/jwt.strategy";
@@ -21,6 +23,8 @@ import { LocalStrategy } from "./strategies/local.strategy";
     }),
     UsersModule,
     RolesModule,
+    VerificationRequestsModule,
+    EmailsModule,
   ],
   providers: [AuthService, LocalStrategy, JwtStrategy],
   controllers: [AuthController],

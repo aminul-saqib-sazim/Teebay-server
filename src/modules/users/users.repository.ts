@@ -5,7 +5,7 @@ import { UserProfile } from "@/common/entities/user-profiles.entity";
 import { CustomSQLBaseRepository } from "@/common/repository/custom-sql-base.repository";
 
 import { User } from "../../common/entities/users.entity";
-import { RegisterUserDto } from "./users.dtos";
+import { RegisterUserDto, UpdateUserDto } from "./users.dtos";
 
 @Injectable()
 export class UsersRepository extends CustomSQLBaseRepository<User> {
@@ -24,6 +24,14 @@ export class UsersRepository extends CustomSQLBaseRepository<User> {
     userProfile.user = user;
 
     this.em.persist([user, userProfile]);
+
+    return user;
+  }
+
+  update(user: User, updateUserDto: UpdateUserDto) {
+    this.em.assign(user, updateUserDto);
+
+    this.em.persist(user);
 
     return user;
   }

@@ -1,36 +1,23 @@
+import { PartialType, PickType } from "@nestjs/mapped-types";
 import { ApiProperty } from "@nestjs/swagger";
 
 import { Type } from "class-transformer";
 import {
   IsEmail,
+  IsEnum,
   IsObject,
   IsOptional,
   IsString,
-  MaxLength,
   MinLength,
   ValidateNested,
 } from "class-validator";
 
-import { UserProfile } from "@/common/entities/user-profiles.entity";
 import { User } from "@/common/entities/users.entity";
 import { EUserRole } from "@/common/enums/roles.enums";
+import { EUserState } from "@/common/enums/users.enums";
 import { ITokenizedUser } from "@/modules/auth/auth.interfaces";
-import { RoleResponse } from "@/modules/roles/roles.dtos";
 
-export class UserProfileDto implements Pick<UserProfile, "firstName" | "lastName"> {
-  @IsString()
-  @MinLength(2)
-  @MaxLength(255)
-  firstName!: string;
-
-  @IsString()
-  @MinLength(2)
-  @MaxLength(255)
-  lastName!: string;
-
-  @Type(() => Number)
-  roleId!: number;
-}
+import { UserProfileDto, UserProfileResponse } from "../user-profiles/user-profiles.dtos";
 
 export class RegisterUserDto implements Pick<User, "email" | "password"> {
   @IsString()
@@ -48,22 +35,22 @@ export class RegisterUserDto implements Pick<User, "email" | "password"> {
   profileInput!: UserProfileDto;
 }
 
+export class UpdateUserDto extends PickType(PartialType(RegisterUserDto), [
+  "password",
+  "profileInput",
+]) {
+  @IsOptional()
+  @IsEnum(EUserState)
+  @ApiProperty({ enum: EUserState, enumName: "EUserState", required: false })
+  state?: EUserState;
+}
+
 export class UserResponse {
   id!: number;
   email!: string;
   createdAt!: string;
   updatedAt!: string;
   userProfile!: UserProfileResponse;
-}
-
-export class UserProfileResponse {
-  id!: number;
-  createdAt!: string;
-  updatedAt!: string;
-  firstName!: string;
-  lastName!: string;
-  email!: string;
-  role!: RoleResponse;
 }
 
 export class TokenizedUser implements ITokenizedUser {

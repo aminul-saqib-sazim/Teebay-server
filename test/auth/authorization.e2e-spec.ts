@@ -6,6 +6,7 @@ import {
   ValidationPipe,
   HttpStatus,
 } from "@nestjs/common";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 import { TestingModule, Test } from "@nestjs/testing";
 
 import { EntityManager, IDatabaseDriver, Connection, MikroORM } from "@mikro-orm/core";
@@ -13,6 +14,7 @@ import { MikroOrmModule } from "@mikro-orm/nestjs";
 
 import { faker } from "@faker-js/faker";
 import request from "supertest";
+import { mockDeep } from "vitest-mock-extended";
 
 import { EUserRole, EPermission } from "@/common/enums/roles.enums";
 import ormConfig from "@/db/db.config";
@@ -22,9 +24,12 @@ import { Roles } from "@/modules/auth/decorators/roles.decorator";
 import { JwtAuthGuard } from "@/modules/auth/guards/jwt-auth.guard";
 import { PermissionsGuard } from "@/modules/auth/guards/permissions.guard";
 import { RolesGuard } from "@/modules/auth/guards/roles.guard";
+import { EmailsModule } from "@/modules/emails/emails.module";
+import { EmailsService } from "@/modules/emails/emails.service";
 import { RolesModule } from "@/modules/roles/roles.module";
 import { RolesService } from "@/modules/roles/roles.service";
 import { UsersModule } from "@/modules/users/users.module";
+import { VerificationRequestsModule } from "@/modules/verification-requests/verification-requests.module";
 
 import { bootstrapTestServer } from "../utils/bootstrap";
 import { truncateTables } from "../utils/db";
@@ -64,10 +69,23 @@ describe("Authorization", () => {
     }
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [MikroOrmModule.forRoot(ormConfig), UsersModule, AuthModule, RolesModule],
+      imports: [
+        MikroOrmModule.forRoot(ormConfig),
+        ConfigModule.forRoot({ isGlobal: true }),
+        UsersModule,
+        AuthModule,
+        RolesModule,
+        EmailsModule,
+        VerificationRequestsModule,
+      ],
       controllers: [DummyController],
       providers: [RolesService],
-    }).compile();
+    })
+      .overrideProvider(EmailsService)
+      .useValue(mockDeep<EmailsService>({ funcPropSupport: true }))
+      .overrideProvider(ConfigService)
+      .useValue(mockDeep<ConfigService>({ funcPropSupport: true }))
+      .compile();
 
     authorizationApp = moduleFixture.createNestApplication();
     authorizationApp.useGlobalPipes(new ValidationPipe({ transform: true }));

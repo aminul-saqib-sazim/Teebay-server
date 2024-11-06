@@ -1,0 +1,31 @@
+import { Type } from "class-transformer";
+import { IsString, MinLength, MaxLength } from "class-validator";
+
+import { UserProfile } from "@/common/entities/user-profiles.entity";
+
+import { RoleResponse } from "../roles/roles.dtos";
+
+export class UserProfileDto implements Pick<UserProfile, "firstName" | "lastName"> {
+  @IsString()
+  @MinLength(2)
+  @MaxLength(255)
+  firstName!: string;
+
+  @IsString()
+  @MinLength(2)
+  @MaxLength(255)
+  lastName!: string;
+
+  @Type(() => Number)
+  roleId!: number;
+}
+
+export class UserProfileResponse {
+  id!: number;
+  createdAt!: string;
+  updatedAt!: string;
+  firstName!: string;
+  lastName!: string;
+  email!: string;
+  role!: RoleResponse;
+}

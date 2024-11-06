@@ -53,6 +53,9 @@ class EnvironmentVariables implements IEnvironmentVariables {
 
   @IsString()
   SENDGRID_API_KEY!: string;
+
+  @IsString()
+  APP_BASE_URL!: string;
 }
 
 export function validate(config: Record<string, unknown>) {

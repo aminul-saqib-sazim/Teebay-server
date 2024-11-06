@@ -5,6 +5,7 @@ import { EntityManager } from "@mikro-orm/core";
 import * as argon2 from "argon2";
 
 import { ARGON2_OPTIONS } from "@/common/config/argon2.config";
+import { Role } from "@/common/entities/roles.entity";
 
 import { RolesRepository } from "../roles/roles.repository";
 import { RegisterUserDto } from "./users.dtos";
@@ -65,5 +66,14 @@ export class UsersService {
     await this.entityManager.flush();
 
     return newUser;
+  }
+
+  async updatePassword(userId: number, password: string, role: Role) {
+    const user = await this.usersRepository.findOneOrFail({
+      id: userId,
+      userProfile: { role },
+    });
+
+    return this.usersRepository.update(user, { password: await this.hashPassword(password) });
   }
 }

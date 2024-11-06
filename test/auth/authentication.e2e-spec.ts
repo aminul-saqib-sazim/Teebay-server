@@ -2,10 +2,21 @@ import { HttpStatus, INestApplication } from "@nestjs/common";
 
 import type { IDatabaseDriver, Connection, EntityManager, MikroORM } from "@mikro-orm/core";
 
+import { faker } from "@faker-js/faker";
+import dayjs from "dayjs";
 import request from "supertest";
+
+import { VerificationRequest } from "@/common/entities/verification-requests.entity";
+import { EUserRole } from "@/common/enums/roles.enums";
+import {
+  EVerificationRequestStatus,
+  EVerificationRequestType,
+} from "@/common/enums/verification-requests.enums";
 
 import { bootstrapTestServer } from "../utils/bootstrap";
 import { truncateTables } from "../utils/db";
+import { UserFactory, UserProfileFactory } from "../utils/factories/users.factory";
+import { VerificationRequestFactory } from "../utils/factories/verification-requests.factory";
 import { createUserInDb } from "../utils/helpers/create-user-in-db.helpers";
 import { THttpServer } from "../utils/types";
 import { seedPermissionsData } from "./auth.helpers";
@@ -59,6 +70,162 @@ describe("Authentication (e2e)", () => {
 
       it("Without authentication params, gets back 401 Unauthenticated", () =>
         request(httpServer).post("/auth/sign-in").expect(HttpStatus.UNAUTHORIZED));
+    });
+  });
+
+  describe("Forgot Password", () => {
+    describe("POST /auth/forgot-password", () => {
+      it("should return BAD_REQUEST(400) when email is not provided", () =>
+        request(httpServer).post("/auth/forgot-password").expect(HttpStatus.BAD_REQUEST));
+
+      it("should return NOT_FOUND(404) when no user exists for provided valid email", () =>
+        request(httpServer)
+          .post("/auth/forgot-password")
+          .send("email=valid@email.com")
+          .expect(HttpStatus.NOT_FOUND));
+
+      it("should return CREATED(201) when a valid email associated to active user is provided", () =>
+        request(httpServer)
+          .post("/auth/forgot-password")
+          .send(`email=${MOCK_AUTH_EMAIL}`)
+          .expect(HttpStatus.CREATED));
+    });
+
+    describe("POST /auth/reset-password", () => {
+      it("should return NOT_FOUND(404) if no token is provided", () =>
+        request(httpServer).post("/auth/reset-password").expect(HttpStatus.NOT_FOUND));
+
+      it("should return NOT_FOUND(404) if an invalid token is provided", () =>
+        request(httpServer)
+          .post("/auth/reset-password/invalid_token")
+          .send(`password=${faker.internet.password()}`)
+          .expect(HttpStatus.NOT_FOUND));
+
+      it("should return BAD_REQUEST(400) if no password is provided", () =>
+        request(httpServer)
+          .post("/auth/reset-password/invalid_token")
+          .expect(HttpStatus.BAD_REQUEST));
+
+      it("fails with BAD_REQUEST(400) if the provided token is EXPIRED", async () => {
+        const verificationRequest = new VerificationRequestFactory(dbService).makeOne({
+          status: EVerificationRequestStatus.EXPIRED,
+          type: EVerificationRequestType.RESET_PASSWORD,
+        });
+
+        await dbService.persistAndFlush([verificationRequest]);
+
+        await request(httpServer)
+          .post(`/auth/reset-password/${verificationRequest.token}`)
+          .send(`password=${faker.internet.password()}`)
+          .expect(HttpStatus.BAD_REQUEST);
+      });
+
+      it("fails with BAD_REQUEST(400) if the provided token is ACTIVE but its past its expiry date", async () => {
+        const verificationRequest = new VerificationRequestFactory(dbService).makeOne({
+          expiresAt: dayjs().subtract(2, "day").toDate(),
+          type: EVerificationRequestType.RESET_PASSWORD,
+        });
+
+        await dbService.persistAndFlush(verificationRequest);
+
+        await request(httpServer)
+          .post(`/auth/reset-password/${verificationRequest.token}`)
+          .expect(HttpStatus.BAD_REQUEST)
+          .send(`password=${faker.internet.password()}`);
+
+        const updatedVerificationRequest = await dbService.findOne(
+          VerificationRequest,
+          { id: verificationRequest.id, token: verificationRequest.token },
+          { disableIdentityMap: true },
+        );
+
+        expect(updatedVerificationRequest?.status).toEqual(EVerificationRequestStatus.EXPIRED);
+      });
+
+      it("should return with CREATED(201) if an ACTIVE token is provided", async () => {
+        const email = faker.internet.email();
+        const password = "password";
+        const user = new UserFactory(dbService).makeOne({
+          email,
+          password,
+        });
+        const userProfile = new UserProfileFactory(dbService).makeOne({
+          role: {
+            name: EUserRole.ADMIN,
+          },
+        });
+        user.userProfile = userProfile;
+        userProfile.user = user;
+
+        const verificationRequest = new VerificationRequestFactory(dbService).makeOne({
+          user,
+          status: EVerificationRequestStatus.ACTIVE,
+          type: EVerificationRequestType.RESET_PASSWORD,
+        });
+
+        user.verificationRequests.add(verificationRequest);
+        await dbService.persistAndFlush([verificationRequest, user, userProfile]);
+
+        const newPassword = "new_password";
+
+        await request(httpServer)
+          .post(`/auth/reset-password/${verificationRequest.token}`)
+          .send(`password=${newPassword}`)
+          .expect(HttpStatus.CREATED)
+          .expect(({ body }) => {
+            expect(body.data?.id).toEqual(user.id);
+          });
+
+        const updatedVerificationRequest = await dbService.findOne(
+          VerificationRequest,
+          { id: verificationRequest.id, token: verificationRequest.token },
+          { disableIdentityMap: true },
+        );
+
+        expect(updatedVerificationRequest?.status).toEqual(EVerificationRequestStatus.EXPIRED);
+      });
+
+      it("should return with CREATED(201) if logged in with new password and UNAUTHORIZED(401) for old password", async () => {
+        const email = faker.internet.email();
+        const password = "password";
+        const user = new UserFactory(dbService).makeOne({
+          email,
+          password,
+        });
+        const userProfile = new UserProfileFactory(dbService).makeOne({
+          role: {
+            name: EUserRole.ADMIN,
+          },
+        });
+        user.userProfile = userProfile;
+        userProfile.user = user;
+
+        const verificationRequest = new VerificationRequestFactory(dbService).makeOne({
+          user,
+          status: EVerificationRequestStatus.ACTIVE,
+          type: EVerificationRequestType.RESET_PASSWORD,
+        });
+
+        user.verificationRequests.add(verificationRequest);
+        await dbService.persistAndFlush([verificationRequest, user, userProfile]);
+
+        const newPassword = "new_password";
+
+        await request(httpServer)
+          .post(`/auth/reset-password/${verificationRequest.token}`)
+          .send(`password=${newPassword}`)
+          .expect(HttpStatus.CREATED);
+
+        await request(httpServer)
+          .post("/auth/sign-in")
+          .send(`email=${email}&password=${password}`)
+          .expect(HttpStatus.UNAUTHORIZED);
+
+        await request(httpServer)
+          .post("/auth/sign-in")
+          .send(`email=${email}&password=${newPassword}`)
+          .expect(HttpStatus.CREATED);
+      });
     });
   });
 });

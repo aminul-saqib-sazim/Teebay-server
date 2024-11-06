@@ -9,7 +9,7 @@ import { AppModule } from "@/app.module";
 import { S3Service } from "@/common/aws/s3-service/s3-service";
 import ormConfig from "@/db/db.config";
 import { DocumentSigningService } from "@/modules/document-signing/document-signing.service";
-import { EmailsModule } from "@/modules/emails/emails.module";
+import { EmailsService } from "@/modules/emails/emails.service";
 import { FileUploadsService } from "@/modules/file-uploads/file-uploads.service";
 import { PdfGenerationService } from "@/modules/pdf-generation/pdf-generation.service";
 
@@ -25,8 +25,8 @@ export const bootstrapTestServer = async () => {
     .useValue(mockDeep<PdfGenerationService>({ funcPropSupport: true }))
     .overrideProvider(DocumentSigningService)
     .useValue(mockDeep<DocumentSigningService>({ funcPropSupport: true }))
-    .overrideProvider(EmailsModule)
-    .useValue(mockDeep<EmailsModule>({ funcPropSupport: true }))
+    .overrideProvider(EmailsService)
+    .useValue(mockDeep<EmailsService>({ funcPropSupport: true }))
     .compile();
 
   const app = moduleFixture.createNestApplication();

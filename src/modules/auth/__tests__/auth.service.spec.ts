@@ -1,9 +1,16 @@
+import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { Test, TestingModule } from "@nestjs/testing";
 
+import { EntityManager } from "@mikro-orm/core";
+
+import { mockDeep } from "vitest-mock-extended";
+
 import { AuthService } from "@/modules/auth/auth.service";
+import { EmailsService } from "@/modules/emails/emails.service";
 import { RolesService } from "@/modules/roles/roles.service";
 import { UsersService } from "@/modules/users/users.service";
+import { VerificationRequestsService } from "@/modules/verification-requests/verification-requests.service";
 
 import { MOCK_JWT_TOKEN, MOCK_USER_PASSWORD } from "./auth.mocks";
 import { MOCK_USER } from "./users.mocks";
@@ -11,15 +18,15 @@ import { MOCK_USER } from "./users.mocks";
 describe("AuthService", () => {
   let service: AuthService;
 
-  const mockJwtService = {
-    signAsync: vi.fn(),
-  };
-
-  const mockUsersService = {
-    findByEmailOrThrow: vi.fn(),
-  };
-
-  const rolesService = {};
+  const mockJwtService = mockDeep<JwtService>({ funcPropSupport: true });
+  const mockUsersService = mockDeep<UsersService>({ funcPropSupport: true });
+  const mockRolesService = mockDeep<RolesService>({ funcPropSupport: true });
+  const mockVerificationRequestsService = mockDeep<VerificationRequestsService>({
+    funcPropSupport: true,
+  });
+  const mockConfigService = mockDeep<ConfigService>({ funcPropSupport: true });
+  const mockEmailsService = mockDeep<EmailsService>({ funcPropSupport: true });
+  const mockEntityManager = mockDeep<EntityManager>({ funcPropSupport: true });
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -35,7 +42,23 @@ describe("AuthService", () => {
         },
         {
           provide: RolesService,
-          useValue: rolesService,
+          useValue: mockRolesService,
+        },
+        {
+          provide: VerificationRequestsService,
+          useValue: mockVerificationRequestsService,
+        },
+        {
+          provide: ConfigService,
+          useValue: mockConfigService,
+        },
+        {
+          provide: EmailsService,
+          useValue: mockEmailsService,
+        },
+        {
+          provide: EntityManager,
+          useValue: mockEntityManager,
         },
       ],
     }).compile();
