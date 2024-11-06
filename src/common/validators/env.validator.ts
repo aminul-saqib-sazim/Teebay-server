@@ -50,6 +50,9 @@ class EnvironmentVariables implements IEnvironmentVariables {
   @IsString()
   @IsOptional()
   DOCUSEAL_API_KEY!: string;
+
+  @IsString()
+  SENDGRID_API_KEY!: string;
 }
 
 export function validate(config: Record<string, unknown>) {

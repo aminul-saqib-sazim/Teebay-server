@@ -10,6 +10,7 @@ import { validate } from "./common/validators/env.validator";
 import ormConfig from "./db/db.config";
 import { AuthModule } from "./modules/auth/auth.module";
 import { DocumentSigningModule } from "./modules/document-signing/document-signing.module";
+import { EmailsModule } from "./modules/emails/emails.module";
 import { FileUploadsModule } from "./modules/file-uploads/file-uploads.module";
 import { HealthModule } from "./modules/health/health.module";
 import { PdfGenerationModule } from "./modules/pdf-generation/pdf-generation.module";
@@ -31,6 +32,8 @@ import { WebsocketExampleModule } from "./modules/websocket-example/websocket-ex
     OpenTelemetryModule.forRoot({
       serviceName: "Project Backend",
     }),
+
+    EmailsModule,
 
     UsersModule,
     AuthModule,

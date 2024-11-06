@@ -13,4 +13,5 @@ export interface IEnvironmentVariables {
   AWS_S3_BUCKET_URL: string;
   AWS_S3_PRESIGN_URL_EXPIRY_IN_MINUTES: number;
   DOCUSEAL_API_KEY?: string;
+  SENDGRID_API_KEY: string;
 }
