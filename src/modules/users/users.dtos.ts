@@ -27,6 +27,9 @@ export class UserProfileDto implements Pick<UserProfile, "firstName" | "lastName
   @MinLength(2)
   @MaxLength(255)
   lastName!: string;
+
+  @Type(() => Number)
+  roleId!: number;
 }
 
 export class RegisterUserDto implements Pick<User, "email" | "password"> {

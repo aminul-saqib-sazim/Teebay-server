@@ -5,6 +5,7 @@ import type { EntityManager, IDatabaseDriver, Connection, MikroORM } from "@mikr
 import { faker } from "@faker-js/faker";
 import request from "supertest";
 
+import { Role } from "@/common/entities/roles.entity";
 import { UserProfile } from "@/common/entities/user-profiles.entity";
 import { EUserRole } from "@/common/enums/roles.enums";
 import { RegisterUserDto } from "@/modules/users/users.dtos";
@@ -22,6 +23,9 @@ describe("UsersController (e2e)", () => {
   let httpServer: THttpServer;
   let orm: MikroORM<IDatabaseDriver<Connection>>;
 
+  let superAdminRole: Role;
+  let adminRole: Role;
+
   beforeAll(async () => {
     const { appInstance, dbServiceInstance, httpServerInstance, ormInstance } =
       await bootstrapTestServer();
@@ -30,6 +34,17 @@ describe("UsersController (e2e)", () => {
     httpServer = httpServerInstance;
     orm = ormInstance;
     await seedPermissionsData(dbService);
+
+    superAdminRole = await dbService.findOneOrFail(
+      Role,
+      { name: EUserRole.SUPER_USER },
+      { disableIdentityMap: true },
+    );
+    adminRole = await dbService.findOneOrFail(
+      Role,
+      { name: EUserRole.ADMIN },
+      { disableIdentityMap: true },
+    );
   });
 
   afterAll(async () => {
@@ -101,6 +116,7 @@ describe("UsersController (e2e)", () => {
         profileInput: {
           firstName: faker.person.firstName(),
           lastName: faker.person.lastName(),
+          roleId: adminRole.id,
         },
       };
 
@@ -140,6 +156,7 @@ describe("UsersController (e2e)", () => {
         profileInput: {
           firstName: faker.person.firstName(),
           lastName: faker.person.lastName(),
+          roleId: superAdminRole.id,
         },
       };
 
@@ -157,6 +174,7 @@ describe("UsersController (e2e)", () => {
         profileInput: {
           firstName: "",
           lastName: "",
+          roleId: superAdminRole.id,
         },
       };
 
