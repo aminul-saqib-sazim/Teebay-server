@@ -22,6 +22,8 @@ export class UserProfileDto implements Pick<UserProfile, "firstName" | "lastName
   roleId!: number;
 }
 
+export class SelfRegisterUserProfileDto extends OmitType(UserProfileDto, ["roleId"]) {}
+
 export class UserProfileUpdateDto extends OmitType(PartialType(UserProfileDto), ["roleId"]) {}
 
 export class UserProfileResponse {

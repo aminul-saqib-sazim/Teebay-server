@@ -1,10 +1,12 @@
 import { HttpStatus, INestApplication } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 
 import type { IDatabaseDriver, Connection, EntityManager, MikroORM } from "@mikro-orm/core";
 
 import { faker } from "@faker-js/faker";
 import dayjs from "dayjs";
 import request from "supertest";
+import { DeepMockProxy } from "vitest-mock-extended";
 
 import { VerificationRequest } from "@/common/entities/verification-requests.entity";
 import { EUserRole } from "@/common/enums/roles.enums";
@@ -12,6 +14,8 @@ import {
   EVerificationRequestStatus,
   EVerificationRequestType,
 } from "@/common/enums/verification-requests.enums";
+import { EmailsService } from "@/modules/emails/emails.service";
+import * as cryptoHelpers from "@/utils/crypto-helper";
 
 import { bootstrapTestServer } from "../utils/bootstrap";
 import { truncateTables } from "../utils/db";
@@ -27,6 +31,7 @@ describe("Authentication (e2e)", () => {
   let dbService: EntityManager<IDatabaseDriver<Connection>>;
   let httpServer: THttpServer;
   let orm: MikroORM<IDatabaseDriver<Connection>>;
+  let mockEmailsService: DeepMockProxy<EmailsService>;
 
   beforeAll(async () => {
     const { appInstance, dbServiceInstance, httpServerInstance, ormInstance } =
@@ -36,6 +41,8 @@ describe("Authentication (e2e)", () => {
     httpServer = httpServerInstance;
     orm = ormInstance;
     await seedPermissionsData(dbService);
+
+    mockEmailsService = app.get<DeepMockProxy<EmailsService>>(EmailsService);
   });
 
   afterAll(async () => {
@@ -121,17 +128,27 @@ describe("Authentication (e2e)", () => {
       });
 
       it("fails with BAD_REQUEST(400) if the provided token is ACTIVE but its past its expiry date", async () => {
+        const user = new UserFactory(dbService).makeOne();
+        const userProfile = new UserProfileFactory(dbService).makeOne({
+          role: {
+            name: EUserRole.ADMIN,
+          },
+        });
         const verificationRequest = new VerificationRequestFactory(dbService).makeOne({
           expiresAt: dayjs().subtract(2, "day").toDate(),
           type: EVerificationRequestType.RESET_PASSWORD,
         });
 
-        await dbService.persistAndFlush(verificationRequest);
+        user.userProfile = userProfile;
+        userProfile.user = user;
+        user.verificationRequests.add(verificationRequest);
+
+        await dbService.persistAndFlush([verificationRequest, user, userProfile]);
 
         await request(httpServer)
           .post(`/auth/reset-password/${verificationRequest.token}`)
-          .expect(HttpStatus.BAD_REQUEST)
-          .send(`password=${faker.internet.password()}`);
+          .send(`password=${faker.internet.password()}`)
+          .expect(HttpStatus.BAD_REQUEST);
 
         const updatedVerificationRequest = await dbService.findOne(
           VerificationRequest,
@@ -140,6 +157,20 @@ describe("Authentication (e2e)", () => {
         );
 
         expect(updatedVerificationRequest?.status).toEqual(EVerificationRequestStatus.EXPIRED);
+      });
+
+      it("fails with BAD_REQUEST(400) if the provided token is not associated with any user", async () => {
+        const verificationRequest = new VerificationRequestFactory(dbService).makeOne({
+          status: EVerificationRequestStatus.ACTIVE,
+          type: EVerificationRequestType.RESET_PASSWORD,
+        });
+
+        await dbService.persistAndFlush([verificationRequest]);
+
+        await request(httpServer)
+          .post(`/auth/reset-password/${verificationRequest.token}`)
+          .send(`password=${faker.internet.password()}`)
+          .expect(HttpStatus.BAD_REQUEST);
       });
 
       it("should return with CREATED(201) if an ACTIVE token is provided", async () => {
@@ -225,6 +256,99 @@ describe("Authentication (e2e)", () => {
           .post("/auth/sign-in")
           .send(`email=${email}&password=${newPassword}`)
           .expect(HttpStatus.CREATED);
+      });
+    });
+
+    describe("POST /auth/sign-up", () => {
+      const validSignupData = {
+        email: faker.internet.email(),
+        password: "testPassword123",
+        userProfile: {
+          firstName: faker.person.firstName(),
+          lastName: faker.person.lastName(),
+        },
+      };
+
+      it("should return CREATED(201) with user data when registration is successful", () => {
+        vi.spyOn(cryptoHelpers, "generateSecureHex").mockReturnValue("123456");
+        vi.spyOn(ConfigService.prototype, "getOrThrow").mockReturnValue("https://xyz.com");
+
+        return request(httpServer)
+          .post("/auth/sign-up")
+          .send(validSignupData)
+          .expect(HttpStatus.CREATED)
+          .expect(({ body }) => {
+            expect(body.data.email).toBe(validSignupData.email);
+            expect(body.data.userProfile.firstName).toBe(validSignupData.userProfile.firstName);
+            expect(body.data.userProfile.lastName).toBe(validSignupData.userProfile.lastName);
+            expect(body.data.password).toBeUndefined();
+
+            expect(mockEmailsService.sendEmailByTextOrHtml).toHaveBeenCalledWith({
+              to: validSignupData.email,
+              subject: "Email Verification",
+              html: 'Click the link to verify your email: <a href="https://xyz.com/verify?token=123456">https://xyz.com/verify?token=123456</a>',
+              text: "Click the link to verify your email: https://xyz.com/verify?token=123456",
+            });
+          });
+      });
+
+      it("should return BAD_REQUEST(400) when email format is invalid", () =>
+        request(httpServer)
+          .post("/auth/sign-up")
+          .send({
+            ...validSignupData,
+            email: "invalid-email",
+          })
+          .expect(HttpStatus.BAD_REQUEST));
+
+      it("should return BAD_REQUEST(400) when password is missing", () =>
+        request(httpServer)
+          .post("/auth/sign-up")
+          .send({
+            ...validSignupData,
+            password: undefined,
+          })
+          .expect(HttpStatus.BAD_REQUEST));
+
+      it("should return BAD_REQUEST(400) when user profile data is incomplete", () =>
+        request(httpServer)
+          .post("/auth/sign-up")
+          .send({
+            ...validSignupData,
+            userProfile: {
+              firstName: faker.person.firstName(),
+            },
+          })
+          .expect(HttpStatus.BAD_REQUEST));
+
+      it("should return BAD_REQUEST(400) when email already exists", async () => {
+        const existingUserEmail = faker.internet.email();
+        const user = new UserFactory(dbService).makeOne({
+          email: existingUserEmail,
+        });
+        const userProfile = new UserProfileFactory(dbService).makeOne({
+          role: {
+            name: EUserRole.ADMIN,
+          },
+        });
+        user.userProfile = userProfile;
+        userProfile.user = user;
+
+        await dbService.persistAndFlush([user, userProfile]);
+
+        const existingUserSignupData = {
+          email: existingUserEmail,
+          password: "testPassword123",
+          userProfile: {
+            firstName: faker.person.firstName(),
+            lastName: faker.person.lastName(),
+          },
+        };
+
+        await request(httpServer)
+          .post("/auth/sign-up")
+          .send(existingUserSignupData)
+          .expect(HttpStatus.BAD_REQUEST);
       });
     });
   });

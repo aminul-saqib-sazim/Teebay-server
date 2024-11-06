@@ -1,5 +1,7 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 
+import { EntityManager } from "@mikro-orm/core";
+
 import dayjs from "dayjs";
 
 import { User } from "@/common/entities/users.entity";
@@ -14,7 +16,10 @@ import { VerificationRequestsRepository } from "./verification-requests.reposito
 
 @Injectable()
 export class VerificationRequestsService {
-  constructor(private readonly verificationRequestsRepository: VerificationRequestsRepository) {}
+  constructor(
+    private readonly verificationRequestsRepository: VerificationRequestsRepository,
+    private readonly em: EntityManager,
+  ) {}
 
   async getVerificationRequest(
     user: User,
@@ -77,7 +82,7 @@ export class VerificationRequestsService {
     return newVerificationRequest;
   }
 
-  async findOrFailVerificationRequest(token: string, type: EVerificationRequestType) {
+  async findOneOrFailVerificationRequest(token: string, type: EVerificationRequestType) {
     const verificationRequest = await this.verificationRequestsRepository.findOneOrFail(
       {
         token,
@@ -87,6 +92,10 @@ export class VerificationRequestsService {
         populate: ["user", "user.userProfile", "user.userProfile.role"],
       },
     );
+
+    if (!verificationRequest.user) {
+      throw new BadRequestException("User not found");
+    }
 
     if (verificationRequest.status === EVerificationRequestStatus.EXPIRED) {
       throw new BadRequestException(EXPIRED_TOKEN_ERROR_MESSAGE);
@@ -105,5 +114,17 @@ export class VerificationRequestsService {
     }
 
     return verificationRequest;
+  }
+
+  async verifyByTokenAndType(token: string, type: EVerificationRequestType) {
+    const verificationRequest = await this.findOneOrFailVerificationRequest(token, type);
+
+    if (type === EVerificationRequestType.EMAIL_VERIFICATION) {
+      verificationRequest.user!.verifiedAt = dayjs().toDate();
+    } else {
+      throw new BadRequestException("Invalid verification request type");
+    }
+
+    await this.em.flush();
   }
 }

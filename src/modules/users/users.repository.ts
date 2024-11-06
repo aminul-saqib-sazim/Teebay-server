@@ -5,11 +5,11 @@ import { UserProfile } from "@/common/entities/user-profiles.entity";
 import { CustomSQLBaseRepository } from "@/common/repository/custom-sql-base.repository";
 
 import { User } from "../../common/entities/users.entity";
-import { RegisterUserDto, UpdateUserDto } from "./users.dtos";
+import { RegisterUserDto, SelfRegisterUserDto, UpdateUserDto } from "./users.dtos";
 
 @Injectable()
 export class UsersRepository extends CustomSQLBaseRepository<User> {
-  createOne(registerUserDto: RegisterUserDto, role: Role) {
+  createOne(registerUserDto: RegisterUserDto | SelfRegisterUserDto, role: Role) {
     const {
       email,
       password,

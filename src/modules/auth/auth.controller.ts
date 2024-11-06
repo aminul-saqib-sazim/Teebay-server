@@ -3,8 +3,9 @@ import { Body, Controller, Param, Post, UseGuards, UseInterceptors } from "@nest
 import { User } from "@/common/entities/users.entity";
 import { ResponseTransformInterceptor } from "@/common/interceptors/response-transform.interceptor";
 
-import { UserResponse } from "../users/users.dtos";
+import { SelfRegisterUserDto, UserResponse } from "../users/users.dtos";
 import { UsersSerializer } from "../users/users.serializer";
+import { UsersService } from "../users/users.service";
 import { FORGOT_PASSWORD_EMAIL_SENT_MESSAGE } from "./auth.constants";
 import {
   ForgotPasswordDto,
@@ -22,6 +23,7 @@ import { LocalAuthGuard } from "./guards/local-auth.guard";
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
+    private readonly usersService: UsersService,
     private readonly usersSerializer: UsersSerializer,
   ) {}
 
@@ -34,6 +36,13 @@ export class AuthController {
       accessToken,
       user: makeTokenizedUser(user),
     };
+  }
+
+  @Post("sign-up")
+  async signUp(@Body() selfRegisterUserDto: SelfRegisterUserDto): Promise<UserResponse> {
+    const newUser = await this.usersService.selfRegister(selfRegisterUserDto);
+
+    return this.usersSerializer.serialize(newUser);
   }
 
   @Post("forgot-password")

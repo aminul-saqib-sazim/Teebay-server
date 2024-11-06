@@ -4,5 +4,6 @@ export enum EVerificationRequestStatus {
 }
 
 export enum EVerificationRequestType {
+  EMAIL_VERIFICATION = "EMAIL_VERIFICATION",
   RESET_PASSWORD = "RESET_PASSWORD",
 }

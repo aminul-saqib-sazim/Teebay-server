@@ -93,7 +93,7 @@ export class AuthService {
 
   async resetPasswordByToken(token: string, newPassword: string) {
     const verificationRequest =
-      await this.verificationRequestsService.findOrFailVerificationRequest(
+      await this.verificationRequestsService.findOneOrFailVerificationRequest(
         token,
         EVerificationRequestType.RESET_PASSWORD,
       );

@@ -1,4 +1,4 @@
-import { PartialType, PickType } from "@nestjs/mapped-types";
+import { OmitType, PartialType, PickType } from "@nestjs/mapped-types";
 import { ApiProperty } from "@nestjs/swagger";
 
 import { Type } from "class-transformer";
@@ -15,7 +15,11 @@ import { User } from "@/common/entities/users.entity";
 import { EUserRole } from "@/common/enums/roles.enums";
 import { ITokenizedUser } from "@/modules/auth/auth.interfaces";
 
-import { UserProfileDto, UserProfileResponse } from "../user-profiles/user-profiles.dtos";
+import {
+  SelfRegisterUserProfileDto,
+  UserProfileDto,
+  UserProfileResponse,
+} from "../user-profiles/user-profiles.dtos";
 
 export class RegisterUserDto implements Pick<User, "email" | "password"> {
   @IsString()
@@ -31,6 +35,13 @@ export class RegisterUserDto implements Pick<User, "email" | "password"> {
   @ValidateNested()
   @Type(() => UserProfileDto)
   userProfile!: UserProfileDto;
+}
+
+export class SelfRegisterUserDto extends OmitType(RegisterUserDto, ["userProfile"]) {
+  @IsObject()
+  @ValidateNested()
+  @Type(() => SelfRegisterUserProfileDto)
+  userProfile!: SelfRegisterUserProfileDto;
 }
 
 export class UpdateUserDto extends PickType(PartialType(RegisterUserDto), ["password"]) {}

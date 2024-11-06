@@ -2,11 +2,6 @@ import { IsEmail, IsString, MinLength } from "class-validator";
 
 import { TokenizedUser } from "@/modules/users/users.dtos";
 
-export class SignInResponse {
-  accessToken!: string;
-  user!: TokenizedUser;
-}
-
 export class ForgotPasswordDto {
   @IsString()
   @IsEmail()
@@ -21,4 +16,9 @@ export class ResetPasswordDto {
 
 export class SendForgotPasswordEmailResponse {
   message!: string;
+}
+
+export class SignInResponse {
+  accessToken!: string;
+  user!: TokenizedUser;
 }
