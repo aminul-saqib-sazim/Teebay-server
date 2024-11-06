@@ -13,7 +13,7 @@ export class UsersRepository extends CustomSQLBaseRepository<User> {
     const {
       email,
       password,
-      profileInput: { firstName, lastName },
+      userProfile: { firstName, lastName },
     } = registerUserDto;
 
     const user = new User(email, password);

@@ -1,3 +1,5 @@
+import { OmitType, PartialType } from "@nestjs/mapped-types";
+
 import { Type } from "class-transformer";
 import { IsString, MinLength, MaxLength } from "class-validator";
 
@@ -19,6 +21,8 @@ export class UserProfileDto implements Pick<UserProfile, "firstName" | "lastName
   @Type(() => Number)
   roleId!: number;
 }
+
+export class UserProfileUpdateDto extends OmitType(PartialType(UserProfileDto), ["roleId"]) {}
 
 export class UserProfileResponse {
   id!: number;

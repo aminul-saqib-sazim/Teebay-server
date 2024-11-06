@@ -4,7 +4,6 @@ import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import {
   IsEmail,
-  IsEnum,
   IsObject,
   IsOptional,
   IsString,
@@ -14,7 +13,6 @@ import {
 
 import { User } from "@/common/entities/users.entity";
 import { EUserRole } from "@/common/enums/roles.enums";
-import { EUserState } from "@/common/enums/users.enums";
 import { ITokenizedUser } from "@/modules/auth/auth.interfaces";
 
 import { UserProfileDto, UserProfileResponse } from "../user-profiles/user-profiles.dtos";
@@ -32,18 +30,10 @@ export class RegisterUserDto implements Pick<User, "email" | "password"> {
   @IsObject()
   @ValidateNested()
   @Type(() => UserProfileDto)
-  profileInput!: UserProfileDto;
+  userProfile!: UserProfileDto;
 }
 
-export class UpdateUserDto extends PickType(PartialType(RegisterUserDto), [
-  "password",
-  "profileInput",
-]) {
-  @IsOptional()
-  @IsEnum(EUserState)
-  @ApiProperty({ enum: EUserState, enumName: "EUserState", required: false })
-  state?: EUserState;
-}
+export class UpdateUserDto extends PickType(PartialType(RegisterUserDto), ["password"]) {}
 
 export class UserResponse {
   id!: number;

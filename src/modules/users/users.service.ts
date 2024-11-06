@@ -52,7 +52,7 @@ export class UsersService {
     }
 
     const role = await this.rolesRepository.findOneOrFail({
-      id: registerUserDto.profileInput.roleId,
+      id: registerUserDto.userProfile.roleId,
     });
 
     const newUser = this.usersRepository.createOne(

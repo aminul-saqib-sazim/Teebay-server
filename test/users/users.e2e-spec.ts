@@ -113,7 +113,7 @@ describe("UsersController (e2e)", () => {
       const newUserRegistrationDto: RegisterUserDto = {
         email: faker.internet.email(),
         password: faker.internet.password(),
-        profileInput: {
+        userProfile: {
           firstName: faker.person.firstName(),
           lastName: faker.person.lastName(),
           roleId: adminRole.id,
@@ -135,8 +135,8 @@ describe("UsersController (e2e)", () => {
               id: expect.any(Number),
               createdAt: expect.any(String),
               updatedAt: expect.any(String),
-              firstName: newUserRegistrationDto.profileInput.firstName,
-              lastName: newUserRegistrationDto.profileInput.lastName,
+              firstName: newUserRegistrationDto.userProfile.firstName,
+              lastName: newUserRegistrationDto.userProfile.lastName,
               email: newUserRegistrationDto.email,
               role: {
                 id: expect.any(Number),
@@ -153,7 +153,7 @@ describe("UsersController (e2e)", () => {
       const newUserRegistrationDto: RegisterUserDto = {
         email: testUserEmail,
         password: testUserPassword,
-        profileInput: {
+        userProfile: {
           firstName: faker.person.firstName(),
           lastName: faker.person.lastName(),
           roleId: superAdminRole.id,
@@ -171,7 +171,7 @@ describe("UsersController (e2e)", () => {
       const newUserRegistrationDto: RegisterUserDto = {
         email: "invalid-email",
         password: "short",
-        profileInput: {
+        userProfile: {
           firstName: "",
           lastName: "",
           roleId: superAdminRole.id,
@@ -187,8 +187,8 @@ describe("UsersController (e2e)", () => {
           expect(response.body.message).toEqual([
             "email must be an email",
             "password must be longer than or equal to 8 characters",
-            "profileInput.firstName must be longer than or equal to 2 characters",
-            "profileInput.lastName must be longer than or equal to 2 characters",
+            "userProfile.firstName must be longer than or equal to 2 characters",
+            "userProfile.lastName must be longer than or equal to 2 characters",
           ]);
         });
     });
