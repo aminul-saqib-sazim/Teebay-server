@@ -1,5 +1,17 @@
-import { Body, Controller, Get, Post, UseGuards, UseInterceptors } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Patch,
+  Post,
+  UseGuards,
+  UseInterceptors,
+  Param,
+  ParseIntPipe,
+  Query,
+} from "@nestjs/common";
 
+import { PaginationArgsDto } from "@/common/dtos/pagination.dtos";
 import { EUserRole } from "@/common/enums/roles.enums";
 import { ResponseTransformInterceptor } from "@/common/interceptors/response-transform.interceptor";
 import { ITokenizedUser } from "@/modules/auth/auth.interfaces";
@@ -8,7 +20,13 @@ import { Roles } from "@/modules/auth/decorators/roles.decorator";
 import { JwtAuthGuard } from "@/modules/auth/guards/jwt-auth.guard";
 import { RolesGuard } from "@/modules/auth/guards/roles.guard";
 
-import { RegisterUserDto, TokenizedUser, UserResponse } from "./users.dtos";
+import {
+  RegisterUserDto,
+  TokenizedUser,
+  UserResponse,
+  AdminUpdateUserDto,
+  AdminFindAllUserResponse,
+} from "./users.dtos";
 import { UsersSerializer } from "./users.serializer";
 import { UsersService } from "./users.service";
 
@@ -32,5 +50,27 @@ export class UsersController {
   async createUser(@Body() registerUserDto: RegisterUserDto): Promise<UserResponse> {
     const newUser = await this.usersService.createOne(registerUserDto);
     return this.usersSerializer.serialize(newUser);
+  }
+
+  @Patch(":id")
+  @UseGuards(RolesGuard)
+  @Roles(EUserRole.SUPER_USER)
+  async updateUser(
+    @Param("id", ParseIntPipe) userId: number,
+    @Body() adminUpdateUserDto: AdminUpdateUserDto,
+  ): Promise<UserResponse> {
+    const updatedUser = await this.usersService.adminUpdateUser(userId, adminUpdateUserDto);
+    return this.usersSerializer.serialize(updatedUser);
+  }
+
+  @Get()
+  @UseGuards(RolesGuard)
+  @Roles(EUserRole.SUPER_USER)
+  async findAll(@Query() { page, limit }: PaginationArgsDto): Promise<AdminFindAllUserResponse> {
+    const { data, meta } = await this.usersService.findAll(page, limit);
+    return {
+      data: this.usersSerializer.serializeMany(data),
+      meta,
+    };
   }
 }

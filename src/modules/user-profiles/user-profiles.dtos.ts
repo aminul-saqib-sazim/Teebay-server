@@ -1,4 +1,4 @@
-import { OmitType, PartialType } from "@nestjs/mapped-types";
+import { OmitType, PartialType } from "@nestjs/swagger";
 
 import { Type } from "class-transformer";
 import { IsString, MinLength, MaxLength } from "class-validator";

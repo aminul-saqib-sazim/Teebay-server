@@ -9,12 +9,13 @@ import { ARGON2_OPTIONS } from "@/common/config/argon2.config";
 import { Role } from "@/common/entities/roles.entity";
 import { EUserRole } from "@/common/enums/roles.enums";
 import { EVerificationRequestType } from "@/common/enums/verification-requests.enums";
+import { computePaginationMetadata } from "@/utils/pagination";
 
 import { EmailsService } from "../emails/emails.service";
 import { RolesRepository } from "../roles/roles.repository";
 import { VerificationRequestsService } from "../verification-requests/verification-requests.service";
 import { EMAIL_VERIFICATION_EMAIL_EXPIRATION_IN_MINUTES } from "./users.constants";
-import { RegisterUserDto, SelfRegisterUserDto } from "./users.dtos";
+import { AdminUpdateUserDto, RegisterUserDto, SelfRegisterUserDto } from "./users.dtos";
 import { UsersRepository } from "./users.repository";
 
 @Injectable()
@@ -129,5 +130,40 @@ export class UsersService {
     });
 
     return this.usersRepository.update(user, { password: await this.hashPassword(password) });
+  }
+
+  async adminUpdateUser(userId: number, adminUpdateUserDto: AdminUpdateUserDto) {
+    const user = await this.findByIdOrThrow(userId);
+
+    if (adminUpdateUserDto.password) {
+      adminUpdateUserDto.password = await this.hashPassword(adminUpdateUserDto.password);
+    }
+
+    let updatedRole: Role | undefined;
+
+    if (adminUpdateUserDto.roleId) {
+      updatedRole = await this.rolesRepository.findOneOrFail({
+        id: adminUpdateUserDto.roleId,
+      });
+    }
+
+    const updatedUser = this.usersRepository.updateAsAdmin(user, adminUpdateUserDto, updatedRole);
+
+    await this.entityManager.flush();
+
+    return updatedUser;
+  }
+
+  async findAll(page: number, limit: number) {
+    const [users, total] = await this.usersRepository.findAllPaginated(page, limit);
+
+    return {
+      data: users,
+      meta: computePaginationMetadata({
+        page,
+        limit,
+        totalItems: total,
+      }),
+    };
   }
 }

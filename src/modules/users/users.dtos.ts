@@ -1,9 +1,10 @@
-import { OmitType, PartialType, PickType } from "@nestjs/mapped-types";
-import { ApiProperty } from "@nestjs/swagger";
+import { OmitType, PartialType, PickType, ApiProperty } from "@nestjs/swagger";
 
 import { Type } from "class-transformer";
 import {
   IsEmail,
+  IsEnum,
+  IsNumber,
   IsObject,
   IsOptional,
   IsString,
@@ -11,8 +12,10 @@ import {
   ValidateNested,
 } from "class-validator";
 
+import { PaginatedResponse } from "@/common/dtos/pagination.dtos";
 import { User } from "@/common/entities/users.entity";
 import { EUserRole } from "@/common/enums/roles.enums";
+import { EUserState } from "@/common/enums/users.enums";
 import { ITokenizedUser } from "@/modules/auth/auth.interfaces";
 
 import {
@@ -46,6 +49,17 @@ export class SelfRegisterUserDto extends OmitType(RegisterUserDto, ["userProfile
 
 export class UpdateUserDto extends PickType(PartialType(RegisterUserDto), ["password"]) {}
 
+export class AdminUpdateUserDto extends UpdateUserDto {
+  @IsOptional()
+  @IsEnum(EUserState)
+  @ApiProperty({ enum: EUserState, enumName: "EUserState" })
+  state?: EUserState;
+
+  @IsOptional()
+  @IsNumber()
+  roleId?: number;
+}
+
 export class UserResponse {
   id!: number;
   email!: string;
@@ -65,4 +79,8 @@ export class TokenizedUser implements ITokenizedUser {
   userProfileId!: number;
 
   email!: string;
+}
+
+export class AdminFindAllUserResponse extends PaginatedResponse {
+  data!: UserResponse[];
 }

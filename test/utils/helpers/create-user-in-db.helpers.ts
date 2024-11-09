@@ -16,6 +16,7 @@ export const createUserInDb = async (
     password?: string;
     role?: EUserRole;
   },
+  shouldFlush = true,
 ) => {
   const defaultConfig = {
     email: MOCK_AUTH_EMAIL,
@@ -42,7 +43,9 @@ export const createUserInDb = async (
   userProfile.user = user;
   userProfile.role = role;
 
-  await dbService.flush();
+  if (shouldFlush) {
+    await dbService.flush();
+  }
 
   return userProfile;
 };

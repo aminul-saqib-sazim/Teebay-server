@@ -8,7 +8,8 @@ import request from "supertest";
 import { Role } from "@/common/entities/roles.entity";
 import { UserProfile } from "@/common/entities/user-profiles.entity";
 import { EUserRole } from "@/common/enums/roles.enums";
-import { RegisterUserDto } from "@/modules/users/users.dtos";
+import { EUserState } from "@/common/enums/users.enums";
+import { AdminUpdateUserDto, RegisterUserDto } from "@/modules/users/users.dtos";
 
 import { seedPermissionsData } from "../auth/auth.helpers";
 import { bootstrapTestServer } from "../utils/bootstrap";
@@ -192,5 +193,205 @@ describe("UsersController (e2e)", () => {
           ]);
         });
     });
+  });
+
+  describe("PATCH /users/:id", () => {
+    const superUserEmail = faker.internet.email();
+    const superUserPassword = faker.internet.password();
+    const regularUserEmail = faker.internet.email();
+    const regularUserPassword = faker.internet.password();
+
+    let superUserToken: string;
+    let regularUserToken: string;
+    let userToUpdate: UserProfile;
+
+    beforeAll(async () => {
+      await createUserInDb(dbService, {
+        email: superUserEmail,
+        password: superUserPassword,
+        role: EUserRole.SUPER_USER,
+      });
+
+      await createUserInDb(dbService, {
+        email: regularUserEmail,
+        password: regularUserPassword,
+        role: EUserRole.ADMIN,
+      });
+
+      userToUpdate = await createUserInDb(dbService, {
+        email: faker.internet.email(),
+        password: faker.internet.password(),
+        role: EUserRole.ADMIN,
+      });
+
+      superUserToken = await getAccessToken(httpServer, superUserEmail, superUserPassword);
+      regularUserToken = await getAccessToken(httpServer, regularUserEmail, regularUserPassword);
+    });
+
+    it("returns OK(200) when super user updates user data", () => {
+      const updateData: AdminUpdateUserDto = {
+        password: faker.internet.password(),
+        state: EUserState.INACTIVE,
+        roleId: superAdminRole.id,
+      };
+
+      return request(httpServer)
+        .patch(`/users/${userToUpdate.user.id}`)
+        .set("Authorization", `Bearer ${superUserToken}`)
+        .send(updateData)
+        .expect(HttpStatus.OK)
+        .expect((response) => {
+          expect(response.body.data).toEqual({
+            id: userToUpdate.user.id,
+            email: userToUpdate.user.email,
+            createdAt: expect.any(String),
+            updatedAt: expect.any(String),
+            userProfile: expect.objectContaining({
+              role: expect.objectContaining({
+                id: superAdminRole.id,
+                name: EUserRole.SUPER_USER,
+              }),
+            }),
+          });
+        });
+    });
+
+    it("returns UNAUTHORIZED(401) when regular user attempts to update", () =>
+      request(httpServer)
+        .patch(`/users/${userToUpdate.user.id}`)
+        .set("Authorization", `Bearer ${regularUserToken}`)
+        .send({ state: EUserState.INACTIVE })
+        .expect(HttpStatus.FORBIDDEN));
+
+    it("returns NOT_FOUND(404) when user id does not exist", () =>
+      request(httpServer)
+        .patch("/users/999999")
+        .set("Authorization", `Bearer ${superUserToken}`)
+        .send({ state: EUserState.INACTIVE })
+        .expect(HttpStatus.NOT_FOUND));
+
+    it("returns BAD_REQUEST(400) when invalid data is provided", () =>
+      request(httpServer)
+        .patch(`/users/${userToUpdate.user.id}`)
+        .set("Authorization", `Bearer ${superUserToken}`)
+        .send({
+          password: "short",
+          state: "INVALID_STATE",
+          roleId: "invalid-role-id",
+        })
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((response) => {
+          expect(response.body.message).toEqual(
+            expect.arrayContaining([
+              "password must be longer than or equal to 8 characters",
+              "state must be one of the following values: UNREGISTERED, ACTIVE, INACTIVE",
+              "roleId must be a number conforming to the specified constraints",
+            ]),
+          );
+        }));
+  });
+
+  describe("GET /users", () => {
+    const superUserEmail = faker.internet.email();
+    const superUserPassword = faker.internet.password();
+    const regularUserEmail = faker.internet.email();
+    const regularUserPassword = faker.internet.password();
+
+    let superUserToken: string;
+    let regularUserToken: string;
+
+    beforeAll(async () => {
+      await createUserInDb(
+        dbService,
+        {
+          email: superUserEmail,
+          password: superUserPassword,
+          role: EUserRole.SUPER_USER,
+        },
+        false,
+      );
+
+      await createUserInDb(
+        dbService,
+        {
+          email: regularUserEmail,
+          password: regularUserPassword,
+          role: EUserRole.ADMIN,
+        },
+        false,
+      );
+
+      for (let i = 0; i < 15; i++) {
+        await createUserInDb(
+          dbService,
+          {
+            email: faker.internet.email(),
+            password: faker.internet.password(),
+            role: EUserRole.ADMIN,
+          },
+          false,
+        );
+      }
+
+      await dbService.flush();
+
+      superUserToken = await getAccessToken(httpServer, superUserEmail, superUserPassword);
+      regularUserToken = await getAccessToken(httpServer, regularUserEmail, regularUserPassword);
+    });
+
+    it("returns OK(200) with paginated users when super user requests", () =>
+      request(httpServer)
+        .get("/users")
+        .set("Authorization", `Bearer ${superUserToken}`)
+        .expect(HttpStatus.OK)
+        .expect((response) => {
+          const { data, meta } = response.body.data;
+          expect(data).toBeInstanceOf(Array);
+          expect(data.length).toBeLessThanOrEqual(10);
+          expect(meta).toEqual({
+            currentPage: 1,
+            itemsPerPage: 10,
+            totalItems: expect.any(Number),
+            totalPages: expect.any(Number),
+            hasNextPage: expect.any(Boolean),
+            hasPreviousPage: expect.any(Boolean),
+          });
+        }));
+
+    it("returns OK(200) with custom pagination parameters", () =>
+      request(httpServer)
+        .get("/users?page=2&limit=5")
+        .set("Authorization", `Bearer ${superUserToken}`)
+        .expect(HttpStatus.OK)
+        .expect((response) => {
+          const { data, meta } = response.body.data;
+          expect(data.length).toBeLessThanOrEqual(5);
+          expect(meta).toEqual({
+            currentPage: 2,
+            itemsPerPage: 5,
+            totalItems: expect.any(Number),
+            totalPages: expect.any(Number),
+            hasNextPage: expect.any(Boolean),
+            hasPreviousPage: true,
+          });
+        }));
+
+    it("returns FORBIDDEN(403) when regular user attempts to access", () =>
+      request(httpServer)
+        .get("/users")
+        .set("Authorization", `Bearer ${regularUserToken}`)
+        .expect(HttpStatus.FORBIDDEN));
+
+    it("returns BAD_REQUEST(400) with invalid pagination parameters", () =>
+      request(httpServer)
+        .get("/users?page=0&limit=0")
+        .set("Authorization", `Bearer ${superUserToken}`)
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((response) => {
+          expect(response.body.message).toEqual([
+            "page must not be less than 1",
+            "limit must not be less than 1",
+          ]);
+        }));
   });
 });

@@ -5,7 +5,12 @@ import { UserProfile } from "@/common/entities/user-profiles.entity";
 import { CustomSQLBaseRepository } from "@/common/repository/custom-sql-base.repository";
 
 import { User } from "../../common/entities/users.entity";
-import { RegisterUserDto, SelfRegisterUserDto, UpdateUserDto } from "./users.dtos";
+import {
+  AdminUpdateUserDto,
+  RegisterUserDto,
+  SelfRegisterUserDto,
+  UpdateUserDto,
+} from "./users.dtos";
 
 @Injectable()
 export class UsersRepository extends CustomSQLBaseRepository<User> {
@@ -34,5 +39,28 @@ export class UsersRepository extends CustomSQLBaseRepository<User> {
     this.em.persist(user);
 
     return user;
+  }
+
+  updateAsAdmin(user: User, adminUpdateUserDto: AdminUpdateUserDto, updatedRole?: Role) {
+    const { roleId: _, ...rest } = adminUpdateUserDto;
+
+    this.em.assign(user, rest);
+
+    if (updatedRole) {
+      user.userProfile.role = updatedRole;
+    }
+
+    this.em.persist(user);
+
+    return user;
+  }
+
+  findAllPaginated(page: number, limit: number) {
+    const qb = this.createQueryBuilder("u")
+      .select("*")
+      .leftJoinAndSelect("u.userProfile", "up")
+      .leftJoinAndSelect("up.role", "r");
+
+    return this.retrievePaginatedRecordsByLimitAndOffset({ qb, page, limit });
   }
 }
