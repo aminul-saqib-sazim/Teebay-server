@@ -110,4 +110,45 @@ describe("UsersController (e2e)", () => {
           ]);
         }));
   });
+
+  describe("GET /user-profiles/me", () => {
+    const testUserEmail = faker.internet.email();
+    const testUserPassword = faker.internet.password();
+
+    let token: string;
+    let userProfile: UserProfile;
+
+    beforeAll(async () => {
+      userProfile = await createUserInDb(dbService, {
+        email: testUserEmail,
+        password: testUserPassword,
+      });
+      token = await getAccessToken(httpServer, testUserEmail, testUserPassword);
+    });
+
+    it("returns OK(200) and user profile data", () =>
+      request(httpServer)
+        .get("/user-profiles/me")
+        .set("Authorization", `Bearer ${token}`)
+        .expect(HttpStatus.OK)
+        .expect((response) => {
+          expect(response.body.data).toEqual({
+            id: userProfile.id,
+            createdAt: expect.any(String),
+            updatedAt: expect.any(String),
+            firstName: expect.any(String),
+            lastName: expect.any(String),
+            email: testUserEmail,
+            role: {
+              id: expect.any(Number),
+              createdAt: expect.any(String),
+              updatedAt: expect.any(String),
+              name: expect.any(String),
+            },
+          });
+        }));
+
+    it("returns UNAUTHORIZED(401) if user is not authenticated", () =>
+      request(httpServer).get("/user-profiles/me").expect(HttpStatus.UNAUTHORIZED));
+  });
 });
