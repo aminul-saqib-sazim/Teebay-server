@@ -127,4 +127,17 @@ export class VerificationRequestsService {
 
     await this.em.flush();
   }
+
+  findOneByTokenAndTypeOrFail(token: string, type: EVerificationRequestType) {
+    return this.verificationRequestsRepository.findOneOrFail(
+      {
+        token,
+        type,
+        status: EVerificationRequestStatus.ACTIVE,
+      },
+      {
+        populate: ["user", "user.userProfile", "user.userProfile.role"],
+      },
+    );
+  }
 }

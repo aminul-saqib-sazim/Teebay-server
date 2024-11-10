@@ -66,7 +66,9 @@ export class UsersController {
   @Get()
   @UseGuards(RolesGuard)
   @Roles(EUserRole.SUPER_USER)
-  async findAll(@Query() { page, limit }: PaginationArgsDto): Promise<AdminFindAllUserResponse> {
+  async findAllUsers(
+    @Query() { page, limit }: PaginationArgsDto,
+  ): Promise<AdminFindAllUserResponse> {
     const { data, meta } = await this.usersService.findAll(page, limit);
     return {
       data: this.usersSerializer.serializeMany(data),
