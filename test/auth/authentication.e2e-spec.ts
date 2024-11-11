@@ -286,8 +286,8 @@ describe("Authentication (e2e)", () => {
             expect(mockEmailsService.sendEmailByTextOrHtml).toHaveBeenCalledWith({
               to: validSignupData.email,
               subject: "Email Verification",
-              html: 'Click the link to verify your email: <a href="https://xyz.com/verify?token=123456">https://xyz.com/verify?token=123456</a>',
-              text: "Click the link to verify your email: https://xyz.com/verify?token=123456",
+              html: `Click the link to verify your email: <a href="https://xyz.com/verify?token=123456&type=${EVerificationRequestType.EMAIL_VERIFICATION}">https://xyz.com/verify?token=123456&type=${EVerificationRequestType.EMAIL_VERIFICATION}</a>`,
+              text: `Click the link to verify your email: https://xyz.com/verify?token=123456&type=${EVerificationRequestType.EMAIL_VERIFICATION}`,
             });
           });
       });

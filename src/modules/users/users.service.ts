@@ -128,7 +128,7 @@ export class UsersService {
     await this.entityManager.flush();
 
     const emailVerificationLink = new URL(
-      `/verify?token=${verificationRequest.token}`,
+      `/verify?token=${verificationRequest.token}&type=${EVerificationRequestType.EMAIL_VERIFICATION}`,
       this.configService.getOrThrow("APP_BASE_URL"),
     );
 

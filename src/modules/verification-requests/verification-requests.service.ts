@@ -121,6 +121,8 @@ export class VerificationRequestsService {
 
     if (type === EVerificationRequestType.EMAIL_VERIFICATION) {
       verificationRequest.user!.verifiedAt = dayjs().toDate();
+      verificationRequest.status = EVerificationRequestStatus.EXPIRED;
+      verificationRequest.expiresAt = dayjs().toDate();
     } else {
       throw new BadRequestException("Invalid verification request type");
     }

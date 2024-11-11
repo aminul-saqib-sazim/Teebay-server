@@ -5,7 +5,11 @@ import { Connection, EntityManager, IDatabaseDriver, MikroORM } from "@mikro-orm
 import { faker } from "@faker-js/faker";
 import request from "supertest";
 
-import { EVerificationRequestType } from "@/common/enums/verification-requests.enums";
+import { VerificationRequest } from "@/common/entities/verification-requests.entity";
+import {
+  EVerificationRequestStatus,
+  EVerificationRequestType,
+} from "@/common/enums/verification-requests.enums";
 
 import { seedPermissionsData } from "../auth/auth.helpers";
 import { bootstrapTestServer } from "../utils/bootstrap";
@@ -55,7 +59,7 @@ describe("VerificationRequestsController (e2e)", () => {
 
       await dbService.flush();
 
-      return request(httpServer)
+      await request(httpServer)
         .post(`/verification-requests/verify/${verificationRequest.token}`)
         .query({ type: EVerificationRequestType.EMAIL_VERIFICATION })
         .expect(HttpStatus.OK)
@@ -64,6 +68,19 @@ describe("VerificationRequestsController (e2e)", () => {
             message: "Verification successful",
           });
         });
+
+      const updatedVerificationRequest = await dbService.findOneOrFail(
+        VerificationRequest,
+        {
+          token: verificationRequest.token,
+        },
+        {
+          disableIdentityMap: true,
+        },
+      );
+
+      expect(updatedVerificationRequest.status).toBe(EVerificationRequestStatus.EXPIRED);
+      expect(updatedVerificationRequest.expiresAt).toBeDefined();
     });
 
     it("returns BAD_REQUEST(400) when token is expired", async () => {
