@@ -9,7 +9,7 @@ import { Role } from "@/common/entities/roles.entity";
 import { UserProfile } from "@/common/entities/user-profiles.entity";
 import { EUserRole } from "@/common/enums/roles.enums";
 import { EUserState } from "@/common/enums/users.enums";
-import { AdminUpdateUserDto, RegisterUserDto } from "@/modules/users/users.dtos";
+import { UpdateUserAsSuperuserDto, RegisterUserDto } from "@/modules/users/users.dtos";
 
 import { seedPermissionsData } from "../auth/auth.helpers";
 import { bootstrapTestServer } from "../utils/bootstrap";
@@ -229,7 +229,7 @@ describe("UsersController (e2e)", () => {
     });
 
     it("returns OK(200) when super user updates user data", () => {
-      const updateData: AdminUpdateUserDto = {
+      const updateData: UpdateUserAsSuperuserDto = {
         password: faker.internet.password(),
         state: EUserState.INACTIVE,
         roleId: superAdminRole.id,

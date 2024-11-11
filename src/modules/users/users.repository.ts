@@ -1,15 +1,18 @@
 import { Injectable } from "@nestjs/common";
 
+import { QueryOrder } from "@mikro-orm/core";
+
 import { Role } from "@/common/entities/roles.entity";
 import { UserProfile } from "@/common/entities/user-profiles.entity";
 import { CustomSQLBaseRepository } from "@/common/repository/custom-sql-base.repository";
 
 import { User } from "../../common/entities/users.entity";
 import {
-  AdminUpdateUserDto,
+  UpdateUserAsSuperuserDto,
   RegisterUserDto,
   SelfRegisterUserDto,
   UpdateUserDto,
+  SuperuserFindAllUsersParams,
 } from "./users.dtos";
 
 @Injectable()
@@ -41,8 +44,12 @@ export class UsersRepository extends CustomSQLBaseRepository<User> {
     return user;
   }
 
-  updateAsAdmin(user: User, adminUpdateUserDto: AdminUpdateUserDto, updatedRole?: Role) {
-    const { roleId: _, ...rest } = adminUpdateUserDto;
+  updateAsSuperuser(
+    user: User,
+    updateUserAsSuperuserDto: UpdateUserAsSuperuserDto,
+    updatedRole?: Role,
+  ) {
+    const { roleId: _, ...rest } = updateUserAsSuperuserDto;
 
     this.em.assign(user, rest);
 
@@ -55,11 +62,22 @@ export class UsersRepository extends CustomSQLBaseRepository<User> {
     return user;
   }
 
-  findAllPaginated(page: number, limit: number) {
+  findAllPaginated(params: SuperuserFindAllUsersParams, currentUserId: number) {
+    const { page, limit, state } = params;
+
     const qb = this.createQueryBuilder("u")
       .select("*")
       .leftJoinAndSelect("u.userProfile", "up")
-      .leftJoinAndSelect("up.role", "r");
+      .leftJoinAndSelect("up.role", "r")
+      .where({
+        state,
+        id: {
+          $ne: currentUserId,
+        },
+      })
+      .orderBy({
+        createdAt: QueryOrder.DESC,
+      });
 
     return this.retrievePaginatedRecordsByLimitAndOffset({ qb, page, limit });
   }

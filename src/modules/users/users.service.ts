@@ -15,7 +15,12 @@ import { EmailsService } from "../emails/emails.service";
 import { RolesRepository } from "../roles/roles.repository";
 import { VerificationRequestsService } from "../verification-requests/verification-requests.service";
 import { EMAIL_VERIFICATION_EMAIL_EXPIRATION_IN_MINUTES } from "./users.constants";
-import { AdminUpdateUserDto, RegisterUserDto, SelfRegisterUserDto } from "./users.dtos";
+import {
+  UpdateUserAsSuperuserDto,
+  RegisterUserDto,
+  SelfRegisterUserDto,
+  SuperuserFindAllUsersParams,
+} from "./users.dtos";
 import { UsersRepository } from "./users.repository";
 
 @Injectable()
@@ -75,6 +80,20 @@ export class UsersService {
 
     await this.entityManager.flush();
 
+    this.emailsService.sendEmailByTextOrHtml({
+      to: newUser.email,
+      subject: "Welcome",
+      text: "Welcome to our platform",
+      html: `
+        <h1>Welcome to our platform</h1>
+        <p>Your user credentials are:</p>
+        <p>Email: ${newUser.email}</p>
+        <p>Temporary Password: ${registerUserDto.password}</p>
+
+        <p>Visit ${new URL("/sign-in", this.configService.getOrThrow("APP_BASE_URL"))} to login</p>
+      `,
+    });
+
     return newUser;
   }
 
@@ -132,30 +151,37 @@ export class UsersService {
     return this.usersRepository.update(user, { password: await this.hashPassword(password) });
   }
 
-  async adminUpdateUser(userId: number, adminUpdateUserDto: AdminUpdateUserDto) {
+  async updateUserAsSuperuser(userId: number, updateUserAsSuperuserDto: UpdateUserAsSuperuserDto) {
     const user = await this.findByIdOrThrow(userId);
 
-    if (adminUpdateUserDto.password) {
-      adminUpdateUserDto.password = await this.hashPassword(adminUpdateUserDto.password);
+    if (updateUserAsSuperuserDto.password) {
+      updateUserAsSuperuserDto.password = await this.hashPassword(
+        updateUserAsSuperuserDto.password,
+      );
     }
 
     let updatedRole: Role | undefined;
 
-    if (adminUpdateUserDto.roleId) {
+    if (updateUserAsSuperuserDto.roleId) {
       updatedRole = await this.rolesRepository.findOneOrFail({
-        id: adminUpdateUserDto.roleId,
+        id: updateUserAsSuperuserDto.roleId,
       });
     }
 
-    const updatedUser = this.usersRepository.updateAsAdmin(user, adminUpdateUserDto, updatedRole);
+    const updatedUser = this.usersRepository.updateAsSuperuser(
+      user,
+      updateUserAsSuperuserDto,
+      updatedRole,
+    );
 
     await this.entityManager.flush();
 
     return updatedUser;
   }
 
-  async findAll(page: number, limit: number) {
-    const [users, total] = await this.usersRepository.findAllPaginated(page, limit);
+  async findAll(params: SuperuserFindAllUsersParams, currentUserId: number) {
+    const { page, limit } = params;
+    const [users, total] = await this.usersRepository.findAllPaginated(params, currentUserId);
 
     return {
       data: users,

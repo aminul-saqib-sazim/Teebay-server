@@ -11,4 +11,8 @@ export class RolesService {
       populate: ["permissions"],
     });
   }
+
+  findAll() {
+    return this.rolesRepository.findAll();
+  }
 }

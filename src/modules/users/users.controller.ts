@@ -11,7 +11,6 @@ import {
   Query,
 } from "@nestjs/common";
 
-import { PaginationArgsDto } from "@/common/dtos/pagination.dtos";
 import { EUserRole } from "@/common/enums/roles.enums";
 import { ResponseTransformInterceptor } from "@/common/interceptors/response-transform.interceptor";
 import { ITokenizedUser } from "@/modules/auth/auth.interfaces";
@@ -24,8 +23,9 @@ import {
   RegisterUserDto,
   TokenizedUser,
   UserResponse,
-  AdminUpdateUserDto,
-  AdminFindAllUserResponse,
+  UpdateUserAsSuperuserDto,
+  SuperuserFindAllUserResponse,
+  SuperuserFindAllUsersParams,
 } from "./users.dtos";
 import { UsersSerializer } from "./users.serializer";
 import { UsersService } from "./users.service";
@@ -57,9 +57,12 @@ export class UsersController {
   @Roles(EUserRole.SUPER_USER)
   async updateUser(
     @Param("id", ParseIntPipe) userId: number,
-    @Body() adminUpdateUserDto: AdminUpdateUserDto,
+    @Body() updateUserAsSuperuserDto: UpdateUserAsSuperuserDto,
   ): Promise<UserResponse> {
-    const updatedUser = await this.usersService.adminUpdateUser(userId, adminUpdateUserDto);
+    const updatedUser = await this.usersService.updateUserAsSuperuser(
+      userId,
+      updateUserAsSuperuserDto,
+    );
     return this.usersSerializer.serialize(updatedUser);
   }
 
@@ -67,9 +70,10 @@ export class UsersController {
   @UseGuards(RolesGuard)
   @Roles(EUserRole.SUPER_USER)
   async findAllUsers(
-    @Query() { page, limit }: PaginationArgsDto,
-  ): Promise<AdminFindAllUserResponse> {
-    const { data, meta } = await this.usersService.findAll(page, limit);
+    @CurrentUser() user: ITokenizedUser,
+    @Query() params: SuperuserFindAllUsersParams,
+  ): Promise<SuperuserFindAllUserResponse> {
+    const { data, meta } = await this.usersService.findAll(params, user.id);
     return {
       data: this.usersSerializer.serializeMany(data),
       meta,

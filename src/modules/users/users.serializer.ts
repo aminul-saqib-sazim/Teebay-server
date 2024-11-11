@@ -15,7 +15,7 @@ export class UsersSerializer extends AbstractBaseSerializer {
   protected serializeManyOptions: TSerializationOptions = {
     skipNull: true,
     forceObject: true,
-    exclude: ["password", "userProfile.role.permissions", "verificationRequests", "state"],
+    exclude: ["password", "userProfile.role.permissions", "verificationRequests"],
     populate: ["userProfile.role"],
   };
 }

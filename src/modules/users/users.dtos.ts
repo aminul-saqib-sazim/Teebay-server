@@ -12,7 +12,7 @@ import {
   ValidateNested,
 } from "class-validator";
 
-import { PaginatedResponse } from "@/common/dtos/pagination.dtos";
+import { PaginatedResponse, PaginationArgsDto } from "@/common/dtos/pagination.dtos";
 import { User } from "@/common/entities/users.entity";
 import { EUserRole } from "@/common/enums/roles.enums";
 import { EUserState } from "@/common/enums/users.enums";
@@ -49,7 +49,7 @@ export class SelfRegisterUserDto extends OmitType(RegisterUserDto, ["userProfile
 
 export class UpdateUserDto extends PickType(PartialType(RegisterUserDto), ["password"]) {}
 
-export class AdminUpdateUserDto extends UpdateUserDto {
+export class UpdateUserAsSuperuserDto extends UpdateUserDto {
   @IsOptional()
   @IsEnum(EUserState)
   @ApiProperty({ enum: EUserState, enumName: "EUserState" })
@@ -60,12 +60,24 @@ export class AdminUpdateUserDto extends UpdateUserDto {
   roleId?: number;
 }
 
+export class SuperuserFindAllUsersParams extends PaginationArgsDto {
+  @ApiProperty({ enum: EUserState, enumName: "EUserState" })
+  @IsOptional()
+  @IsEnum(EUserState)
+  state?: EUserState;
+}
+
 export class UserResponse {
   id!: number;
   email!: string;
   createdAt!: string;
   updatedAt!: string;
   userProfile!: UserProfileResponse;
+}
+
+export class SuperuserUserResponse extends UserResponse {
+  @ApiProperty({ enum: EUserState, enumName: "EUserState" })
+  state!: EUserState;
 }
 
 export class TokenizedUser implements ITokenizedUser {
@@ -81,6 +93,6 @@ export class TokenizedUser implements ITokenizedUser {
   email!: string;
 }
 
-export class AdminFindAllUserResponse extends PaginatedResponse {
-  data!: UserResponse[];
+export class SuperuserFindAllUserResponse extends PaginatedResponse {
+  data!: SuperuserUserResponse[];
 }
