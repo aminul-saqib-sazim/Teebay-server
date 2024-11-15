@@ -162,3 +162,29 @@ $ yarn run test:cov
 
 ### Certificate Handling
 For production deployments that require SSL certificates (e.g., for managed database connections), you can mount your certificates directory using the `CERTS_PATH` environment variable.
+
+## Build Actions (Local)
+### Running Build Actions with the Script
+- We have included a script (test-lint.sh) in the root directory to streamline the process of linting and testing the project.
+- To use the script, follow these steps:
+
+  1. Ensure the script is executable. If not, make it executable by running:
+     ```bash
+     chmod +x ./test-lint.sh
+     ```
+  2. If you don't use tmux, skip to the next step.
+     - If you do use tmux, make sure you run this script outside any other tmux sessions
+  3. Run the script:
+     ```bash
+     ./test-lint.sh
+     ```
+     This will:
+       - Start a new tmux session named `test-lint`.
+       - Open three panes:
+         - Pane 1: Executes e2e tests.
+         - Pane 2: Runs lint checks.
+         - Pane 3: Executes unit tests.
+  4. Once the actions are complete, you can:
+     - Manually check the output in each pane for any errors or failures.
+     - If necessary, take screenshot of the screen and attach the screenshot to your pull request (PR).
+
