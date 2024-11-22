@@ -26,6 +26,11 @@ export class Role extends CustomBaseEntity {
   @Enum(() => EUserRole)
   name!: EUserRole;
 
-  @ManyToMany(() => Permission, (permission) => permission.roles, { owner: true })
+  @ManyToMany(() => Permission, (permission) => permission.roles, {
+    pivotTable: "roles_permissions",
+    joinColumn: "role_id",
+    inverseJoinColumn: "permission_id",
+    owner: true,
+  })
   permissions = new Collection<Permission>(this);
 }
