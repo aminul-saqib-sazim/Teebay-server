@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
 import { EntityManager } from "@mikro-orm/core";
@@ -7,10 +7,13 @@ import * as argon2 from "argon2";
 
 import { ARGON2_OPTIONS } from "@/common/config/argon2.config";
 import { Role } from "@/common/entities/roles.entity";
+import { User } from "@/common/entities/users.entity";
 import { EUserRole } from "@/common/enums/roles.enums";
+import { EOAuthProvider } from "@/common/enums/shared.enums";
 import { EVerificationRequestType } from "@/common/enums/verification-requests.enums";
 import { computePaginationMetadata } from "@/utils/pagination";
 
+import { ISignInWithGoogleParams } from "../auth/auth.interfaces";
 import { EmailsService } from "../emails/emails.service";
 import { RolesRepository } from "../roles/roles.repository";
 import { VerificationRequestsService } from "../verification-requests/verification-requests.service";
@@ -25,6 +28,8 @@ import { UsersRepository } from "./users.repository";
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(
     private readonly entityManager: EntityManager,
     private readonly usersRepository: UsersRepository,
@@ -45,6 +50,10 @@ export class UsersService {
     return user;
   }
 
+  findByEmail(email: string) {
+    return this.usersRepository.findOne({ email });
+  }
+
   async findByEmailOrThrow(email: string) {
     const user = await this.usersRepository.findOneOrFail(
       {
@@ -57,7 +66,7 @@ export class UsersService {
     return user;
   }
 
-  async createOne(registerUserDto: RegisterUserDto) {
+  async createOne(registerUserDto: RegisterUserDto, currentUser: User) {
     const existingUser = await this.usersRepository.findOne({
       email: registerUserDto.email,
     });
@@ -76,6 +85,7 @@ export class UsersService {
         password: await this.hashPassword(registerUserDto.password),
       },
       role,
+      currentUser,
     );
 
     await this.entityManager.flush();
@@ -90,7 +100,10 @@ export class UsersService {
         <p>Email: ${newUser.email}</p>
         <p>Temporary Password: ${registerUserDto.password}</p>
 
-        <p>Visit ${new URL("/sign-in", this.configService.getOrThrow("APP_BASE_URL"))} to login</p>
+        <p>Visit ${new URL(
+          "/sign-in",
+          this.configService.getOrThrow("CLIENT_BASE_URL"),
+        )} to login</p>
       `,
     });
 
@@ -117,6 +130,7 @@ export class UsersService {
       },
       role,
     );
+    newUser.createdBy = newUser;
 
     const verificationRequest =
       this.verificationRequestsService.createAndPersistNewVerificationRequest(
@@ -129,7 +143,7 @@ export class UsersService {
 
     const emailVerificationLink = new URL(
       `/verify?token=${verificationRequest.token}&type=${EVerificationRequestType.EMAIL_VERIFICATION}`,
-      this.configService.getOrThrow("APP_BASE_URL"),
+      this.configService.getOrThrow("CLIENT_BASE_URL"),
     );
 
     this.emailsService.sendEmailByTextOrHtml({
@@ -148,10 +162,14 @@ export class UsersService {
       userProfile: { role },
     });
 
-    return this.usersRepository.update(user, { password: await this.hashPassword(password) });
+    return this.usersRepository.update(user, { password: await this.hashPassword(password) }, user);
   }
 
-  async updateUserAsSuperuser(userId: number, updateUserAsSuperuserDto: UpdateUserAsSuperuserDto) {
+  async updateUserAsSuperuser(
+    userId: number,
+    updateUserAsSuperuserDto: UpdateUserAsSuperuserDto,
+    currentUser: User,
+  ) {
     const user = await this.findByIdOrThrow(userId);
 
     if (updateUserAsSuperuserDto.password) {
@@ -172,6 +190,7 @@ export class UsersService {
       user,
       updateUserAsSuperuserDto,
       updatedRole,
+      currentUser,
     );
 
     await this.entityManager.flush();
@@ -191,5 +210,25 @@ export class UsersService {
         totalItems: total,
       }),
     };
+  }
+
+  async createWithOAuthProvider(input: ISignInWithGoogleParams, provider: EOAuthProvider) {
+    const role = await this.rolesRepository.findOneOrFail({ name: input.roleName });
+
+    const entityManager = this.usersRepository.getEntityManager().fork();
+
+    await entityManager.begin();
+
+    try {
+      const newUser = this.usersRepository.createWithOAuthProvider(input, provider, role);
+
+      await entityManager.commit();
+
+      return newUser;
+    } catch (error) {
+      this.logger.error("Create user with oauth transaction failed", error);
+      await entityManager.rollback();
+      throw error;
+    }
   }
 }

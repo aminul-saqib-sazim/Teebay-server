@@ -188,3 +188,14 @@ For production deployments that require SSL certificates (e.g., for managed data
      - Manually check the output in each pane for any errors or failures.
      - If necessary, take screenshot of the screen and attach the screenshot to your pull request (PR).
 
+## Adding Audit Logging for a New Entity
+
+To add audit logging for a new entity, follow these steps:
+
+1. Make sure `ENABLE_AUDIT_LOGGING` environment variable is set to `'true'`. 
+
+2. The audit logging subscriber is added to the `src/app.module.ts` file.
+
+3. Extend your new entity with `createdBy` and `updatedBy` fields. During CRUD operations, make sure to track `createdBy` and `updatedBy` using the logged in user.
+
+An example can be found in `src/common/entities/users.entity.ts`.

@@ -12,3 +12,19 @@ export interface ITokenizedUser extends Omit<IJwtPayload, "sub"> {
   claim: EUserRole;
   userProfileId: number;
 }
+
+export interface IGoogleOnlineUser {
+  email: string;
+  isVerified: boolean;
+  firstName: string;
+  lastName: string;
+  sub: string;
+  scope: string;
+  tokenType: string;
+  accessToken: string;
+}
+
+export interface ISignInWithGoogleParams {
+  user: IGoogleOnlineUser;
+  roleName: EUserRole;
+}

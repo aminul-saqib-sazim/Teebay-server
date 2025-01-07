@@ -24,12 +24,15 @@ import { Roles } from "@/modules/auth/decorators/roles.decorator";
 import { JwtAuthGuard } from "@/modules/auth/guards/jwt-auth.guard";
 import { PermissionsGuard } from "@/modules/auth/guards/permissions.guard";
 import { RolesGuard } from "@/modules/auth/guards/roles.guard";
+import { GoogleStrategy } from "@/modules/auth/strategies/google.strategy";
 import { EmailsModule } from "@/modules/emails/emails.module";
 import { EmailsService } from "@/modules/emails/emails.service";
 import { RolesModule } from "@/modules/roles/roles.module";
 import { RolesService } from "@/modules/roles/roles.service";
+import { UserProfilesModule } from "@/modules/user-profiles/user-profiles.module";
 import { UsersModule } from "@/modules/users/users.module";
 import { VerificationRequestsModule } from "@/modules/verification-requests/verification-requests.module";
+import { PermissionsModule } from "@/permissions/permissions.module";
 
 import { bootstrapTestServer } from "../utils/bootstrap";
 import { truncateTables } from "../utils/db";
@@ -73,6 +76,8 @@ describe("Authorization", () => {
         MikroOrmModule.forRoot(ormConfig),
         ConfigModule.forRoot({ isGlobal: true }),
         UsersModule,
+        UserProfilesModule,
+        PermissionsModule,
         AuthModule,
         RolesModule,
         EmailsModule,
@@ -85,6 +90,8 @@ describe("Authorization", () => {
       .useValue(mockDeep<EmailsService>({ funcPropSupport: true }))
       .overrideProvider(ConfigService)
       .useValue(mockDeep<ConfigService>({ funcPropSupport: true }))
+      .overrideProvider(GoogleStrategy)
+      .useValue(mockDeep<GoogleStrategy>({ funcPropSupport: true }))
       .compile();
 
     authorizationApp = moduleFixture.createNestApplication();

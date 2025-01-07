@@ -18,8 +18,11 @@ jobs:
       AWS_S3_BUCKET_NAME: project-dev-bucket
       AWS_S3_PRESIGN_URL_EXPIRY_IN_MINUTES: 5
       SENDGRID_API_KEY: SG.xxxxx
-      APP_BASE_URL: http://localhost:5000
       YARN_CACHE_FOLDER: ${{ github.workspace }}/tests/.yarn-cache
+      ENABLE_AUDIT_LOGGING: true
+      GOOGLE_CLIENT_ID: xxxxx
+      GOOGLE_CLIENT_SECRET: xxxxx
+      CLIENT_BASE_URL: http://localhost:3000
 
     steps:
       - name: Clean workspace

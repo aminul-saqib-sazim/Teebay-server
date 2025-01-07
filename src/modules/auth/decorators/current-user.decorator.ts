@@ -1,10 +1,8 @@
 import { createParamDecorator, ExecutionContext } from "@nestjs/common";
 
-import { ITokenizedUser } from "@/modules/auth/auth.interfaces";
+import { User } from "@/common/entities/users.entity";
 
-export const CurrentUser = createParamDecorator(
-  (_: unknown, ctx: ExecutionContext): ITokenizedUser => {
-    const request = ctx.switchToHttp().getRequest();
-    return request.user;
-  },
-);
+export const CurrentUser = createParamDecorator((_: unknown, ctx: ExecutionContext): User => {
+  const request = ctx.switchToHttp().getRequest();
+  return request.user;
+});

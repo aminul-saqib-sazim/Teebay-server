@@ -9,6 +9,7 @@ import { EmailsModule } from "../emails/emails.module";
 import { VerificationRequestsModule } from "../verification-requests/verification-requests.module";
 import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
+import { GoogleStrategy } from "./strategies/google.strategy";
 import { JwtStrategy } from "./strategies/jwt.strategy";
 import { LocalStrategy } from "./strategies/local.strategy";
 
@@ -26,7 +27,7 @@ import { LocalStrategy } from "./strategies/local.strategy";
     VerificationRequestsModule,
     EmailsModule,
   ],
-  providers: [AuthService, LocalStrategy, JwtStrategy],
+  providers: [AuthService, LocalStrategy, JwtStrategy, GoogleStrategy],
   controllers: [AuthController],
 })
 export class AuthModule {}

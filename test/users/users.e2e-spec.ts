@@ -7,6 +7,7 @@ import request from "supertest";
 
 import { Role } from "@/common/entities/roles.entity";
 import { UserProfile } from "@/common/entities/user-profiles.entity";
+import { User } from "@/common/entities/users.entity";
 import { EUserRole } from "@/common/enums/roles.enums";
 import { EUserState } from "@/common/enums/users.enums";
 import { UpdateUserAsSuperuserDto, RegisterUserDto } from "@/modules/users/users.dtos";
@@ -97,20 +98,20 @@ describe("UsersController (e2e)", () => {
   describe("POST /users", () => {
     const testUserEmail = faker.internet.email();
     const testUserPassword = faker.internet.password();
-
-    let token: string;
+    let superuserProfile: UserProfile;
+    let superuserToken: string;
 
     beforeAll(async () => {
-      await createUserInDb(dbService, {
+      superuserProfile = await createUserInDb(dbService, {
         email: testUserEmail,
         password: testUserPassword,
         role: EUserRole.SUPER_USER,
       });
 
-      token = await getAccessToken(httpServer, testUserEmail, testUserPassword);
+      superuserToken = await getAccessToken(httpServer, testUserEmail, testUserPassword);
     });
 
-    it("returns CREATED(201) after creating a new user", () => {
+    it("returns CREATED(201) after creating a new user", async () => {
       const newUserRegistrationDto: RegisterUserDto = {
         email: faker.internet.email(),
         password: faker.internet.password(),
@@ -121,33 +122,40 @@ describe("UsersController (e2e)", () => {
         },
       };
 
-      return request(httpServer)
+      const response = await request(httpServer)
         .post("/users")
-        .set("Authorization", `Bearer ${token}`)
+        .set("Authorization", `Bearer ${superuserToken}`)
         .send(newUserRegistrationDto)
-        .expect(HttpStatus.CREATED)
-        .expect((response) => {
-          expect(response.body.data).toEqual({
+        .expect(HttpStatus.CREATED);
+
+      expect(response.body.data).toEqual({
+        id: expect.any(Number),
+        email: newUserRegistrationDto.email,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        userProfile: {
+          id: expect.any(Number),
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+          firstName: newUserRegistrationDto.userProfile.firstName,
+          lastName: newUserRegistrationDto.userProfile.lastName,
+          email: newUserRegistrationDto.email,
+          role: {
             id: expect.any(Number),
-            email: newUserRegistrationDto.email,
             createdAt: expect.any(String),
             updatedAt: expect.any(String),
-            userProfile: {
-              id: expect.any(Number),
-              createdAt: expect.any(String),
-              updatedAt: expect.any(String),
-              firstName: newUserRegistrationDto.userProfile.firstName,
-              lastName: newUserRegistrationDto.userProfile.lastName,
-              email: newUserRegistrationDto.email,
-              role: {
-                id: expect.any(Number),
-                createdAt: expect.any(String),
-                updatedAt: expect.any(String),
-                name: EUserRole.ADMIN,
-              },
-            },
-          });
-        });
+            name: EUserRole.ADMIN,
+          },
+        },
+      });
+
+      const createdUser = await dbService.findOneOrFail(
+        User,
+        { email: newUserRegistrationDto.email },
+        { populate: ["createdBy"], disableIdentityMap: true },
+      );
+
+      expect(createdUser.createdBy?.id).toBe(superuserProfile.user.id);
     });
 
     it("returns BAD_REQUEST(400) if user already exists", () => {
@@ -163,7 +171,7 @@ describe("UsersController (e2e)", () => {
 
       return request(httpServer)
         .post("/users")
-        .set("Authorization", `Bearer ${token}`)
+        .set("Authorization", `Bearer ${superuserToken}`)
         .send(newUserRegistrationDto)
         .expect(HttpStatus.BAD_REQUEST);
     });
@@ -181,7 +189,7 @@ describe("UsersController (e2e)", () => {
 
       return request(httpServer)
         .post("/users")
-        .set("Authorization", `Bearer ${token}`)
+        .set("Authorization", `Bearer ${superuserToken}`)
         .send(newUserRegistrationDto)
         .expect(HttpStatus.BAD_REQUEST)
         .expect((response) => {
@@ -204,9 +212,10 @@ describe("UsersController (e2e)", () => {
     let superUserToken: string;
     let regularUserToken: string;
     let userToUpdate: UserProfile;
+    let superUser: UserProfile;
 
     beforeAll(async () => {
-      await createUserInDb(dbService, {
+      superUser = await createUserInDb(dbService, {
         email: superUserEmail,
         password: superUserPassword,
         role: EUserRole.SUPER_USER,
@@ -228,14 +237,14 @@ describe("UsersController (e2e)", () => {
       regularUserToken = await getAccessToken(httpServer, regularUserEmail, regularUserPassword);
     });
 
-    it("returns OK(200) when super user updates user data", () => {
+    it("returns OK(200) when super user updates user data", async () => {
       const updateData: UpdateUserAsSuperuserDto = {
         password: faker.internet.password(),
         state: EUserState.INACTIVE,
         roleId: superAdminRole.id,
       };
 
-      return request(httpServer)
+      await request(httpServer)
         .patch(`/users/${userToUpdate.user.id}`)
         .set("Authorization", `Bearer ${superUserToken}`)
         .send(updateData)
@@ -254,6 +263,14 @@ describe("UsersController (e2e)", () => {
             }),
           });
         });
+
+      const updatedUser = await dbService.findOneOrFail(
+        User,
+        { id: userToUpdate.user.id },
+        { populate: ["updatedBy"], disableIdentityMap: true },
+      );
+
+      expect(updatedUser.updatedBy?.id).toBe(superUser.user.id);
     });
 
     it("returns UNAUTHORIZED(401) when regular user attempts to update", () =>

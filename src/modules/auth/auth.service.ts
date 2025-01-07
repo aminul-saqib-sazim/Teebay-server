@@ -8,6 +8,7 @@ import * as argon2 from "argon2";
 
 import { ARGON2_OPTIONS } from "@/common/config/argon2.config";
 import { User } from "@/common/entities/users.entity";
+import { EOAuthProvider } from "@/common/enums/shared.enums";
 import {
   EVerificationRequestStatus,
   EVerificationRequestType,
@@ -21,7 +22,8 @@ import {
   INVALID_USER_CREDENTIALS,
   RESET_PASSWORD_TOKEN_EXPIRATION_DURATION_IN_MINUTES,
 } from "./auth.constants";
-import { IJwtPayload } from "./auth.interfaces";
+import { ChangePasswordDto } from "./auth.dtos";
+import { IJwtPayload, ISignInWithGoogleParams } from "./auth.interfaces";
 
 @Injectable()
 export class AuthService {
@@ -80,7 +82,7 @@ export class AuthService {
 
     const resetPasswordLink = new URL(
       `/reset-password?token=${resetPasswordVerificationRequest.token}`,
-      this.configService.getOrThrow("APP_BASE_URL"),
+      this.configService.getOrThrow("CLIENT_BASE_URL"),
     );
 
     return this.emailsService.sendEmailByTextOrHtml({
@@ -111,5 +113,40 @@ export class AuthService {
     await this.em.flush();
 
     return updatedUser;
+  }
+
+  async changePassword(userId: number, changePasswordDto: ChangePasswordDto) {
+    const user = await this.usersService.findByIdOrThrow(userId);
+
+    const verified = await argon2.verify(
+      user.password as string,
+      changePasswordDto.currentPassword,
+      ARGON2_OPTIONS,
+    );
+    if (!verified) throw new UnauthorizedException(INVALID_USER_CREDENTIALS);
+
+    const updatedUser = await this.usersService.updatePassword(
+      user.id,
+      changePasswordDto.newPassword,
+      user.userProfile.role,
+    );
+
+    await this.em.flush();
+
+    return updatedUser;
+  }
+
+  async signInWithGoogle(input: ISignInWithGoogleParams) {
+    const existingUser = await this.usersService.findByEmail(input.user.email);
+
+    if (!existingUser) {
+      return this.usersService.createWithOAuthProvider(input, EOAuthProvider.GOOGLE);
+    }
+
+    if (existingUser.password) {
+      throw new UnauthorizedException("User already signed up with email and password");
+    }
+
+    return existingUser;
   }
 }

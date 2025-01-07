@@ -3,7 +3,8 @@ import { PassportStrategy } from "@nestjs/passport";
 
 import { ExtractJwt, Strategy } from "passport-jwt";
 
-import { IJwtPayload, ITokenizedUser } from "@/modules/auth/auth.interfaces";
+import { User } from "@/common/entities/users.entity";
+import { IJwtPayload } from "@/modules/auth/auth.interfaces";
 
 import { AuthService } from "../auth.service";
 
@@ -17,7 +18,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: IJwtPayload): Promise<ITokenizedUser> {
+  async validate(payload: IJwtPayload): Promise<User> {
     const user = await this.authService.checkUserExists(payload.sub);
     const userClaim = await this.authService.checkUserClaimByRole(payload.claimId);
 
@@ -27,12 +28,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!(user.userProfile.role.id === userClaim.id))
       throw new UnauthorizedException("User claim mismatch");
 
-    return {
-      id: user.id,
-      email: user.email,
-      claim: userClaim.name,
-      claimId: user.userProfile.role.id,
-      userProfileId: user.userProfile.id,
-    };
+    return user;
   }
 }

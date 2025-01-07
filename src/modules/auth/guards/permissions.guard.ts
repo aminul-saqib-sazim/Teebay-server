@@ -1,8 +1,8 @@
 import { Injectable, CanActivate, ExecutionContext } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 
+import { User } from "@/common/entities/users.entity";
 import { EPermission } from "@/common/enums/roles.enums";
-import { ITokenizedUser } from "@/modules/auth/auth.interfaces";
 import { RolesService } from "@/modules/roles/roles.service";
 
 import { PERMISSIONS_KEY } from "../decorators/permissions.decorator";
@@ -22,8 +22,8 @@ export class PermissionsGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
-    const user = request.user as ITokenizedUser;
-    const userRoleDescription = await this.rolesService.findByIdOrThrow(user.claimId);
+    const user = request.user as User;
+    const userRoleDescription = await this.rolesService.findByIdOrThrow(user.userProfile.role.id);
     const userPermissions = userRoleDescription.permissions.map(
       (rolePermission) => rolePermission.name,
     );

@@ -11,14 +11,15 @@ import {
   Query,
 } from "@nestjs/common";
 
+import { User } from "@/common/entities/users.entity";
 import { EUserRole } from "@/common/enums/roles.enums";
 import { ResponseTransformInterceptor } from "@/common/interceptors/response-transform.interceptor";
-import { ITokenizedUser } from "@/modules/auth/auth.interfaces";
 import { CurrentUser } from "@/modules/auth/decorators/current-user.decorator";
 import { Roles } from "@/modules/auth/decorators/roles.decorator";
 import { JwtAuthGuard } from "@/modules/auth/guards/jwt-auth.guard";
 import { RolesGuard } from "@/modules/auth/guards/roles.guard";
 
+import { makeTokenizedUser } from "../auth/auth.helpers";
 import {
   RegisterUserDto,
   TokenizedUser,
@@ -40,15 +41,18 @@ export class UsersController {
   ) {}
 
   @Get("me")
-  me(@CurrentUser() user: ITokenizedUser): TokenizedUser {
-    return user;
+  me(@CurrentUser() user: User): TokenizedUser {
+    return makeTokenizedUser(user);
   }
 
   @Post()
   @UseGuards(RolesGuard)
   @Roles(EUserRole.SUPER_USER)
-  async createUser(@Body() registerUserDto: RegisterUserDto): Promise<UserResponse> {
-    const newUser = await this.usersService.createOne(registerUserDto);
+  async createUser(
+    @CurrentUser() currentUser: User,
+    @Body() registerUserDto: RegisterUserDto,
+  ): Promise<UserResponse> {
+    const newUser = await this.usersService.createOne(registerUserDto, currentUser);
     return this.usersSerializer.serialize(newUser);
   }
 
@@ -56,12 +60,14 @@ export class UsersController {
   @UseGuards(RolesGuard)
   @Roles(EUserRole.SUPER_USER)
   async updateUser(
+    @CurrentUser() currentUser: User,
     @Param("id", ParseIntPipe) userId: number,
     @Body() updateUserAsSuperuserDto: UpdateUserAsSuperuserDto,
   ): Promise<UserResponse> {
     const updatedUser = await this.usersService.updateUserAsSuperuser(
       userId,
       updateUserAsSuperuserDto,
+      currentUser,
     );
     return this.usersSerializer.serialize(updatedUser);
   }
@@ -70,7 +76,7 @@ export class UsersController {
   @UseGuards(RolesGuard)
   @Roles(EUserRole.SUPER_USER)
   async findAllUsers(
-    @CurrentUser() user: ITokenizedUser,
+    @CurrentUser() user: User,
     @Query() params: SuperuserFindAllUsersParams,
   ): Promise<SuperuserFindAllUserResponse> {
     const { data, meta } = await this.usersService.findAll(params, user.id);

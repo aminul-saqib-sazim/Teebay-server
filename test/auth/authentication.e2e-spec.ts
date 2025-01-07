@@ -8,6 +8,7 @@ import dayjs from "dayjs";
 import request from "supertest";
 import { DeepMockProxy } from "vitest-mock-extended";
 
+import { User } from "@/common/entities/users.entity";
 import { VerificationRequest } from "@/common/entities/verification-requests.entity";
 import { EUserRole } from "@/common/enums/roles.enums";
 import {
@@ -214,6 +215,9 @@ describe("Authentication (e2e)", () => {
         );
 
         expect(updatedVerificationRequest?.status).toEqual(EVerificationRequestStatus.EXPIRED);
+
+        await dbService.refresh(user);
+        expect(user.updatedBy?.id).toBe(user.id);
       });
 
       it("should return with CREATED(201) if logged in with new password and UNAUTHORIZED(401) for old password", async () => {
@@ -269,11 +273,11 @@ describe("Authentication (e2e)", () => {
         },
       };
 
-      it("should return CREATED(201) with user data when registration is successful", () => {
+      it("should return CREATED(201) with user data when registration is successful", async () => {
         vi.spyOn(cryptoHelpers, "generateSecureHex").mockReturnValue("123456");
         vi.spyOn(ConfigService.prototype, "getOrThrow").mockReturnValue("https://xyz.com");
 
-        return request(httpServer)
+        await request(httpServer)
           .post("/auth/sign-up")
           .send(validSignupData)
           .expect(HttpStatus.CREATED)
@@ -290,6 +294,16 @@ describe("Authentication (e2e)", () => {
               text: `Click the link to verify your email: https://xyz.com/verify?token=123456&type=${EVerificationRequestType.EMAIL_VERIFICATION}`,
             });
           });
+
+        const user = await dbService.findOneOrFail(
+          User,
+          { email: validSignupData.email },
+          {
+            disableIdentityMap: true,
+          },
+        );
+        expect(user).toBeDefined();
+        expect(user.createdBy?.id).toBe(user.id);
       });
 
       it("should return BAD_REQUEST(400) when email format is invalid", () =>

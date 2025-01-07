@@ -1,12 +1,15 @@
 import { Injectable } from "@nestjs/common";
 
-import { QueryOrder } from "@mikro-orm/core";
+import { EntityManager, QueryOrder, wrap } from "@mikro-orm/core";
 
 import { Role } from "@/common/entities/roles.entity";
+import { UserOAuth } from "@/common/entities/user-oauths.entity";
 import { UserProfile } from "@/common/entities/user-profiles.entity";
+import { EOAuthProvider } from "@/common/enums/shared.enums";
 import { CustomSQLBaseRepository } from "@/common/repository/custom-sql-base.repository";
 
 import { User } from "../../common/entities/users.entity";
+import { ISignInWithGoogleParams } from "../auth/auth.interfaces";
 import {
   UpdateUserAsSuperuserDto,
   RegisterUserDto,
@@ -17,7 +20,7 @@ import {
 
 @Injectable()
 export class UsersRepository extends CustomSQLBaseRepository<User> {
-  createOne(registerUserDto: RegisterUserDto | SelfRegisterUserDto, role: Role) {
+  createOne(registerUserDto: RegisterUserDto | SelfRegisterUserDto, role: Role, createdBy?: User) {
     const {
       email,
       password,
@@ -31,13 +34,21 @@ export class UsersRepository extends CustomSQLBaseRepository<User> {
     user.userProfile = userProfile;
     userProfile.user = user;
 
+    if (createdBy) {
+      user.createdBy = createdBy;
+    }
+
     this.em.persist([user, userProfile]);
 
     return user;
   }
 
-  update(user: User, updateUserDto: UpdateUserDto) {
+  update(user: User, updateUserDto: UpdateUserDto, updatedBy?: User) {
     this.em.assign(user, updateUserDto);
+
+    if (updatedBy) {
+      user.updatedBy = updatedBy;
+    }
 
     this.em.persist(user);
 
@@ -48,6 +59,7 @@ export class UsersRepository extends CustomSQLBaseRepository<User> {
     user: User,
     updateUserAsSuperuserDto: UpdateUserAsSuperuserDto,
     updatedRole?: Role,
+    updatedBy?: User,
   ) {
     const { roleId: _, ...rest } = updateUserAsSuperuserDto;
 
@@ -55,6 +67,10 @@ export class UsersRepository extends CustomSQLBaseRepository<User> {
 
     if (updatedRole) {
       user.userProfile.role = updatedRole;
+    }
+
+    if (updatedBy) {
+      user.updatedBy = updatedBy;
     }
 
     this.em.persist(user);
@@ -80,5 +96,26 @@ export class UsersRepository extends CustomSQLBaseRepository<User> {
       });
 
     return this.retrievePaginatedRecordsByLimitAndOffset({ qb, page, limit });
+  }
+
+  createWithOAuthProvider(
+    input: ISignInWithGoogleParams,
+    provider: EOAuthProvider,
+    role: Role,
+    em?: EntityManager,
+  ) {
+    const entityManager = em ?? this.em;
+
+    const newUser = new User(input.user.email);
+
+    const newUserProfile = new UserProfile(input.user.firstName, input.user.lastName);
+    wrap(newUserProfile).assign({ user: newUser, role });
+
+    const userOAuth = new UserOAuth(input.user.sub, provider, input.user.isVerified);
+    wrap(userOAuth).assign({ user: newUser });
+
+    entityManager.persist([newUser, newUserProfile, userOAuth]);
+
+    return newUser;
   }
 }

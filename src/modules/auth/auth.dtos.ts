@@ -14,6 +14,15 @@ export class ResetPasswordDto {
   password!: string;
 }
 
+export class ChangePasswordDto {
+  @IsString()
+  currentPassword!: string;
+
+  @IsString()
+  @MinLength(8)
+  newPassword!: string;
+}
+
 export class SendForgotPasswordEmailResponse {
   message!: string;
 }

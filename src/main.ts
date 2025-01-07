@@ -10,10 +10,12 @@ import { getAllowedMethods, getCorsConfig } from "./common/config/cors.config";
 import getWinstonLoggerTransports from "./utils/logger";
 
 async function bootstrap() {
+  const logger = WinstonModule.createLogger({
+    transports: getWinstonLoggerTransports(),
+  });
+
   const app = await NestFactory.create(AppModule, {
-    logger: WinstonModule.createLogger({
-      transports: getWinstonLoggerTransports(),
-    }),
+    logger,
   });
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.enableVersioning({
@@ -45,6 +47,8 @@ async function bootstrap() {
 
   app.enableShutdownHooks();
 
-  await app.listen(process.env.BE_PORT);
+  await app.listen(process.env.BE_PORT, () => {
+    logger.log(`Listening on port ${process.env.BE_PORT}`);
+  });
 }
 bootstrap();

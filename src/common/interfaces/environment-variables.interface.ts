@@ -1,6 +1,6 @@
 export interface IEnvironmentVariables {
   NODE_ENV: string;
-  STAGE_ENV: "local" | "development" | "production" | "test";
+  STAGE_ENV: "local" | "development" | "staging" | "production" | "test";
   DATABASE_URL: string;
   JWT_SECRET: string;
   JWT_TOKEN_LIFETIME: string;
@@ -14,5 +14,8 @@ export interface IEnvironmentVariables {
   AWS_S3_PRESIGN_URL_EXPIRY_IN_MINUTES: number;
   DOCUSEAL_API_KEY?: string;
   SENDGRID_API_KEY: string;
-  APP_BASE_URL: string;
+  ENABLE_AUDIT_LOGGING?: boolean;
+  GOOGLE_CLIENT_ID: string;
+  GOOGLE_CLIENT_SECRET: string;
+  CLIENT_BASE_URL: string;
 }
