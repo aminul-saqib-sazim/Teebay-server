@@ -5,8 +5,15 @@ Make sure you have `nvm` installed. Then, run the following commands:
 ```bash
 $ nvm use
 ```
-
 We use Node v20 by default.
+
+We use `yarn` (v1) as our package manager. After using `nvm` to change to the proper node version, run the following command to install `yarn`
+
+```bash
+npm i -g yarn
+```
+
+To install the dependencies, run the following command:
 
 ```bash
 $ yarn install
