@@ -1,7 +1,7 @@
 import { OmitType, PartialType } from "@nestjs/swagger";
 
 import { Type } from "class-transformer";
-import { IsString, MinLength, MaxLength, IsNotEmpty } from "class-validator";
+import { IsString, MinLength, MaxLength } from "class-validator";
 
 import { UserProfile } from "@/common/entities/user-profiles.entity";
 
@@ -24,11 +24,7 @@ export class UserProfileDto implements Pick<UserProfile, "firstName" | "lastName
 
 export class SelfRegisterUserProfileDto extends OmitType(UserProfileDto, ["roleId"]) {}
 
-export class UpdateUserProfileDto extends OmitType(PartialType(UserProfileDto), ["roleId"]) {
-  @IsString()
-  @IsNotEmpty()
-  password!: string;
-}
+export class UpdateUserProfileDto extends OmitType(PartialType(UserProfileDto), ["roleId"]) {}
 
 export class UserProfileResponse {
   id!: number;

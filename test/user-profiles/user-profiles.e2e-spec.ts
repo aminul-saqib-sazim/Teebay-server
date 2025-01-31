@@ -60,7 +60,6 @@ describe("UsersController (e2e)", () => {
       const updateDto = {
         firstName: faker.person.firstName(),
         lastName: faker.person.lastName(),
-        password: testUserPassword,
       };
 
       return request(httpServer)
@@ -106,8 +105,6 @@ describe("UsersController (e2e)", () => {
         .expect(HttpStatus.BAD_REQUEST)
         .expect((response) => {
           expect(response.body.message).toEqual([
-            "password should not be empty",
-            "password must be a string",
             "firstName must be longer than or equal to 2 characters",
             "lastName must be longer than or equal to 2 characters",
           ]);
