@@ -59,7 +59,7 @@
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.3.1",
     "@nestjs/platform-socket.io": "^10.3.7",
-    "@nestjs/swagger": "8",
+    "@nestjs/swagger": "^8",
     "@nestjs/terminus": "^10.2.3",
     "@nestjs/websockets": "^10.3.3",
     "@sendgrid/mail": "^8.1.4",

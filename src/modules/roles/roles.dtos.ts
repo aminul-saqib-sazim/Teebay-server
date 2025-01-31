@@ -1,22 +1,21 @@
-import { Permission } from "@/common/entities/permissions.entity";
-import { Role } from "@/common/entities/roles.entity";
+import { PermissionResponse } from "@/permissions/permissions.dtos";
 
 export class RoleResponse {
   id!: number;
-  createdAt!: string;
-  updatedAt!: string;
+  createdAt!: Date;
+  updatedAt!: Date;
   name!: string;
 }
 
 export class RolesWithUsersCount {
-  role!: Role;
+  role!: RoleResponse;
   activeUsersCount!: number;
   inactiveUsersCount!: number;
 }
 
 export class RolesWithUsersAndPermissionsResponse {
   roles!: RolesWithUsersCount[];
-  permissions!: Permission[];
+  permissions!: PermissionResponse[];
 }
 
 export class updateRolesPermissionsDto {

@@ -70,8 +70,8 @@ export class SuperuserFindAllUsersParams extends PaginationArgsDto {
 export class UserResponse {
   id!: number;
   email!: string;
-  createdAt!: string;
-  updatedAt!: string;
+  createdAt!: Date;
+  updatedAt!: Date;
   userProfile!: UserProfileResponse;
 }
 

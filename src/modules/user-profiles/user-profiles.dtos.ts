@@ -32,8 +32,8 @@ export class UpdateUserProfileDto extends OmitType(PartialType(UserProfileDto), 
 
 export class UserProfileResponse {
   id!: number;
-  createdAt!: string;
-  updatedAt!: string;
+  createdAt!: Date;
+  updatedAt!: Date;
   firstName!: string;
   lastName!: string;
   email!: string;
