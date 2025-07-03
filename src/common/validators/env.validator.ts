@@ -1,13 +1,5 @@
 import { plainToInstance } from "class-transformer";
-import {
-  IsBoolean,
-  IsIn,
-  IsNumber,
-  IsOptional,
-  IsPositive,
-  IsString,
-  validateSync,
-} from "class-validator";
+import { IsIn, IsNumber, IsOptional, IsPositive, IsString, validateSync } from "class-validator";
 
 import { IEnvironmentVariables } from "../interfaces/environment-variables.interface";
 
@@ -63,8 +55,9 @@ class EnvironmentVariables implements IEnvironmentVariables {
   SENDGRID_API_KEY!: string;
 
   @IsOptional()
-  @IsBoolean()
-  ENABLE_AUDIT_LOGGING: boolean = false;
+  @IsString()
+  @IsIn(["true", "false"])
+  ENABLE_AUDIT_LOGGING: "true" | "false" = "false";
 
   @IsString()
   GOOGLE_CLIENT_ID!: string;
@@ -73,7 +66,10 @@ class EnvironmentVariables implements IEnvironmentVariables {
   GOOGLE_CLIENT_SECRET!: string;
 
   @IsString()
-  CLIENT_BASE_URL!: string;
+  WEB_CLIENT_BASE_URL!: string;
+
+  @IsString()
+  SEND_FROM_EMAIL!: string;
 }
 
 export function validate(config: Record<string, unknown>) {

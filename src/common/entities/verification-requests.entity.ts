@@ -49,10 +49,4 @@ export class VerificationRequest extends CustomBaseEntity {
     nullable: true,
   })
   user?: Rel<User>;
-
-  @ManyToOne(() => User, { fieldName: "created_by", nullable: true })
-  createdBy?: Rel<User> | null;
-
-  @ManyToOne(() => User, { fieldName: "updated_by", nullable: true })
-  updatedBy?: Rel<User> | null;
 }

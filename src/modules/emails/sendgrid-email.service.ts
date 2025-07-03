@@ -3,13 +3,15 @@ import { ConfigService } from "@nestjs/config";
 
 import sgMail, { MailDataRequired } from "@sendgrid/mail";
 
-import { SEND_FROM_EMAIL } from "./emails.constants";
+import { IEmailService } from "./email-service.interface";
 
 @Injectable()
-export class EmailsService {
-  private readonly logger = new Logger();
+export class SendgridEmailService implements IEmailService {
+  private readonly logger = new Logger(SendgridEmailService.name);
+  private readonly defaultSenderEmail: string;
 
   constructor(private readonly configService: ConfigService) {
+    this.defaultSenderEmail = this.configService.getOrThrow<string>("SEND_FROM_EMAIL");
     const sendGridApiKey = this.configService.getOrThrow<string>("SENDGRID_API_KEY");
     sgMail.setApiKey(sendGridApiKey);
   }
@@ -17,17 +19,19 @@ export class EmailsService {
   async sendEmailByTextOrHtml({
     to,
     subject,
+    from = this.defaultSenderEmail,
     text = "",
     html = "",
   }: {
     to: string;
     subject: string;
+    from?: string;
     text?: string;
     html?: string;
   }): Promise<void> {
     const msg: MailDataRequired | MailDataRequired[] = {
       to,
-      from: SEND_FROM_EMAIL,
+      from,
       subject,
       text,
       html,
@@ -43,16 +47,18 @@ export class EmailsService {
 
   async sendEmailByTemplateId({
     to,
+    from = this.defaultSenderEmail,
     templateId,
     templateData,
   }: {
     to: string;
+    from?: string;
     templateId: string;
     templateData?: Record<string, unknown>;
   }): Promise<void> {
     let mailData: { to: string; from: string; templateId: string; dynamicTemplateData?: object } = {
       to,
-      from: SEND_FROM_EMAIL,
+      from,
       templateId,
     };
 

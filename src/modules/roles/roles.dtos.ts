@@ -18,7 +18,7 @@ export class RolesWithUsersAndPermissionsResponse {
   permissions!: PermissionResponse[];
 }
 
-export class updateRolesPermissionsDto {
+export class UpdateRolesPermissionsDto {
   roleId!: number;
   permissionsToRemoveIds!: number[];
   permissionsToAddIds!: number[];

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
+import { Inject, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 
@@ -16,7 +16,8 @@ import {
 import { RolesService } from "@/modules/roles/roles.service";
 import { UsersService } from "@/modules/users/users.service";
 
-import { EmailsService } from "../emails/emails.service";
+import { IEmailService } from "../emails/email-service.interface";
+import { EMAIL_SERVICE_TOKEN } from "../emails/emails.constants";
 import { VerificationRequestsService } from "../verification-requests/verification-requests.service";
 import {
   INVALID_USER_CREDENTIALS,
@@ -33,7 +34,8 @@ export class AuthService {
     private readonly rolesService: RolesService,
     private readonly verificationRequestsService: VerificationRequestsService,
     private readonly configService: ConfigService,
-    private readonly emailsService: EmailsService,
+    @Inject(EMAIL_SERVICE_TOKEN)
+    private readonly emailsService: IEmailService,
     private readonly em: EntityManager,
   ) {}
 
@@ -82,7 +84,7 @@ export class AuthService {
 
     const resetPasswordLink = new URL(
       `/reset-password?token=${resetPasswordVerificationRequest.token}`,
-      this.configService.getOrThrow("CLIENT_BASE_URL"),
+      this.configService.getOrThrow("WEB_CLIENT_BASE_URL"),
     );
 
     return this.emailsService.sendEmailByTextOrHtml({

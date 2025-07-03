@@ -7,7 +7,6 @@ import request from "supertest";
 
 import { Role } from "@/common/entities/roles.entity";
 import { UserProfile } from "@/common/entities/user-profiles.entity";
-import { User } from "@/common/entities/users.entity";
 import { EUserRole } from "@/common/enums/roles.enums";
 import { EUserState } from "@/common/enums/users.enums";
 import { UpdateUserAsSuperuserDto, RegisterUserDto } from "@/modules/users/users.dtos";
@@ -98,11 +97,10 @@ describe("UsersController (e2e)", () => {
   describe("POST /users", () => {
     const testUserEmail = faker.internet.email();
     const testUserPassword = faker.internet.password();
-    let superuserProfile: UserProfile;
     let superuserToken: string;
 
     beforeAll(async () => {
-      superuserProfile = await createUserInDb(dbService, {
+      await createUserInDb(dbService, {
         email: testUserEmail,
         password: testUserPassword,
         role: EUserRole.SUPER_USER,
@@ -148,14 +146,6 @@ describe("UsersController (e2e)", () => {
           },
         },
       });
-
-      const createdUser = await dbService.findOneOrFail(
-        User,
-        { email: newUserRegistrationDto.email },
-        { populate: ["createdBy"], disableIdentityMap: true },
-      );
-
-      expect(createdUser.createdBy?.id).toBe(superuserProfile.user.id);
     });
 
     it("returns BAD_REQUEST(400) if user already exists", () => {
@@ -212,10 +202,9 @@ describe("UsersController (e2e)", () => {
     let superUserToken: string;
     let regularUserToken: string;
     let userToUpdate: UserProfile;
-    let superUser: UserProfile;
 
     beforeAll(async () => {
-      superUser = await createUserInDb(dbService, {
+      await createUserInDb(dbService, {
         email: superUserEmail,
         password: superUserPassword,
         role: EUserRole.SUPER_USER,
@@ -263,14 +252,6 @@ describe("UsersController (e2e)", () => {
             }),
           });
         });
-
-      const updatedUser = await dbService.findOneOrFail(
-        User,
-        { id: userToUpdate.user.id },
-        { populate: ["updatedBy"], disableIdentityMap: true },
-      );
-
-      expect(updatedUser.updatedBy?.id).toBe(superUser.user.id);
     });
 
     it("returns UNAUTHORIZED(401) when regular user attempts to update", () =>

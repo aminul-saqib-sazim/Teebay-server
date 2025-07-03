@@ -9,7 +9,7 @@ import { RolesGuard } from "../auth/guards/roles.guard";
 import {
   RoleResponse,
   RolesWithUsersAndPermissionsResponse,
-  updateRolesPermissionsDto,
+  UpdateRolesPermissionsDto,
 } from "./roles.dtos";
 import { RolesSerializer } from "./roles.serializer";
 import { RolesService } from "./roles.service";
@@ -42,7 +42,7 @@ export class RolesController {
   @UseGuards(RolesGuard)
   @Roles(EUserRole.ADMIN, EUserRole.SUPER_USER)
   @Patch("update-permissions")
-  async updateRolesPermissions(@Body() updateRolesPermissionsDto: updateRolesPermissionsDto) {
+  async updateRolesPermissions(@Body() updateRolesPermissionsDto: UpdateRolesPermissionsDto) {
     const rolesPermissions = await this.rolesService.updateRolesPermissions(
       updateRolesPermissionsDto.roleId,
       updateRolesPermissionsDto.permissionsToRemoveIds,

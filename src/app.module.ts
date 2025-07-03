@@ -1,10 +1,11 @@
 import { Logger, MiddlewareConsumer, Module } from "@nestjs/common";
-import { ConfigModule, ConfigService } from "@nestjs/config";
+import { ConfigModule } from "@nestjs/config";
 
 import { MikroOrmModule } from "@mikro-orm/nestjs";
 
 import { OpenTelemetryModule } from "@metinseylan/nestjs-opentelemetry";
 
+import { AuditLoggingModule } from "./common/audit-logging/audit-logging.module";
 import { AuditLoggingSubscriber } from "./common/audit-logging/audit-logging.subscriber";
 import { AppLoggerMiddleware } from "./common/middleware/request-logger.middleware";
 import { validate } from "./common/validators/env.validator";
@@ -31,11 +32,12 @@ import { PermissionsModule } from "./permissions/permissions.module";
     }),
 
     MikroOrmModule.forRootAsync({
-      useFactory: (configService: ConfigService) => ({
+      imports: [AuditLoggingModule],
+      useFactory: (auditLoggingSubscriber: AuditLoggingSubscriber) => ({
         ...ormConfig,
-        subscribers: [new AuditLoggingSubscriber(configService)],
+        subscribers: [auditLoggingSubscriber],
       }),
-      inject: [ConfigService],
+      inject: [AuditLoggingSubscriber],
     }),
 
     OpenTelemetryModule.forRoot({
@@ -43,6 +45,8 @@ import { PermissionsModule } from "./permissions/permissions.module";
     }),
 
     EmailsModule,
+
+    AuditLoggingModule,
 
     UsersModule,
     AuthModule,

@@ -15,7 +15,8 @@ import {
   EVerificationRequestStatus,
   EVerificationRequestType,
 } from "@/common/enums/verification-requests.enums";
-import { EmailsService } from "@/modules/emails/emails.service";
+import { IEmailService } from "@/modules/emails/email-service.interface";
+import { EMAIL_SERVICE_TOKEN } from "@/modules/emails/emails.constants";
 import * as cryptoHelpers from "@/utils/crypto-helper";
 
 import { bootstrapTestServer } from "../utils/bootstrap";
@@ -32,7 +33,7 @@ describe("Authentication (e2e)", () => {
   let dbService: EntityManager<IDatabaseDriver<Connection>>;
   let httpServer: THttpServer;
   let orm: MikroORM<IDatabaseDriver<Connection>>;
-  let mockEmailsService: DeepMockProxy<EmailsService>;
+  let mockEmailsService: DeepMockProxy<IEmailService>;
 
   beforeAll(async () => {
     const { appInstance, dbServiceInstance, httpServerInstance, ormInstance } =
@@ -43,7 +44,7 @@ describe("Authentication (e2e)", () => {
     orm = ormInstance;
     await seedPermissionsData(dbService);
 
-    mockEmailsService = app.get<DeepMockProxy<EmailsService>>(EmailsService);
+    mockEmailsService = app.get<DeepMockProxy<IEmailService>>(EMAIL_SERVICE_TOKEN);
   });
 
   afterAll(async () => {
@@ -215,9 +216,6 @@ describe("Authentication (e2e)", () => {
         );
 
         expect(updatedVerificationRequest?.status).toEqual(EVerificationRequestStatus.EXPIRED);
-
-        await dbService.refresh(user);
-        expect(user.updatedBy?.id).toBe(user.id);
       });
 
       it("should return with CREATED(201) if logged in with new password and UNAUTHORIZED(401) for old password", async () => {
@@ -303,7 +301,6 @@ describe("Authentication (e2e)", () => {
           },
         );
         expect(user).toBeDefined();
-        expect(user.createdBy?.id).toBe(user.id);
       });
 
       it("should return BAD_REQUEST(400) when email format is invalid", () =>

@@ -22,7 +22,8 @@ jobs:
       ENABLE_AUDIT_LOGGING: true
       GOOGLE_CLIENT_ID: xxxxx
       GOOGLE_CLIENT_SECRET: xxxxx
-      CLIENT_BASE_URL: http://localhost:3000
+      WEB_CLIENT_BASE_URL: http://localhost:3000
+      SEND_FROM_EMAIL: test@example.com
 
     steps:
       - name: Clean workspace

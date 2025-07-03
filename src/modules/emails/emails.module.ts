@@ -1,9 +1,15 @@
 import { Module } from "@nestjs/common";
 
-import { EmailsService } from "./emails.service";
+import { EMAIL_SERVICE_TOKEN } from "./emails.constants";
+import { SendgridEmailService } from "./sendgrid-email.service";
 
 @Module({
-  providers: [EmailsService],
-  exports: [EmailsService],
+  providers: [
+    {
+      provide: EMAIL_SERVICE_TOKEN,
+      useClass: SendgridEmailService,
+    },
+  ],
+  exports: [EMAIL_SERVICE_TOKEN],
 })
 export class EmailsModule {}

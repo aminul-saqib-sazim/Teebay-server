@@ -101,7 +101,7 @@ export class AuthController {
   ): Promise<UserResponse> {
     const user = await this.authService.resetPasswordByToken(token, resetPasswordDto.password);
 
-    return this.usersSerializer.serialize(user);
+    return this.usersSerializer.serialize<User, UserResponse>(user);
   }
 
   @UseGuards(JwtAuthGuard)

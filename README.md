@@ -66,12 +66,7 @@ Default output format []: json
 Next, make sure your localstack instance is running via `docker compose`
 
 ```bash
-docker compose -f ./docker-compose.localstack.yml up
-```
-
-Next, you need to create the S3 bucket
-```bash
-AWS_PROFILE=localstack_dev aws --endpoint-url=http://localhost:4566 s3api create-bucket --bucket project-dev-bucket
+docker compose -f ./docker-compose.local.yml up
 ```
 
 Verify that the bucket was created using:
@@ -106,11 +101,6 @@ $ yarn run start
 
 # watch mode
 $ yarn run start:dev
-
-# watch mode with local s3 bucket, requires docker daemon. This command waits for a certain amount
-# after calling `docker compose up`. You may need to press Q in order for the server to start up
-# after localstack is initialized.
-$ AWS_PROFILE=localstack_dev npm run start:dev:bucket
 
 # production mode
 $ yarn run start:prod
@@ -195,14 +185,12 @@ For production deployments that require SSL certificates (e.g., for managed data
      - Manually check the output in each pane for any errors or failures.
      - If necessary, take screenshot of the screen and attach the screenshot to your pull request (PR).
 
-## Adding Audit Logging for a New Entity
+## Audit Logging
 
-To add audit logging for a new entity, follow these steps:
+Audit Logging is available as a feature in this repository. All database create/update/delete actions are logged in the `audit_logs` table. For this to work, we adopt the following approach:
 
-1. Make sure `ENABLE_AUDIT_LOGGING` environment variable is set to `'true'`. 
+1. We control whether audit logging is enabled by using `ENABLE_AUDIT_LOGGING` environment variable.
 
-2. The audit logging subscriber is added to the `src/app.module.ts` file.
+2. `AuditLoggingSubscriber` is an event subscriber for Mikro ORM that listens for `onFlush` events. This is added to the `src/app.module.ts` file.
 
-3. Extend your new entity with `createdBy` and `updatedBy` fields. During CRUD operations, make sure to track `createdBy` and `updatedBy` using the logged in user.
-
-An example can be found in `src/common/entities/users.entity.ts`.
+3. `AuditLoggingSubscriberCreatorInterceptor` is registered as one of the global interceptors in `main.ts`, which is responsible for setting the logged in user in the `AuditLoggingSubscriber` context. Interceptors resolve after middlewares and guards resolve, and in our application, guards are responsible for attaching the user object to the request object after validating the access token.

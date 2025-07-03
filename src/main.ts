@@ -1,4 +1,4 @@
-import { ValidationPipe, VersioningType } from "@nestjs/common";
+import { Logger, ValidationPipe, VersioningType } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { SwaggerModule, DocumentBuilder, SwaggerDocumentOptions } from "@nestjs/swagger";
 
@@ -6,7 +6,10 @@ import helmet from "helmet";
 import { WinstonModule } from "nest-winston";
 
 import { AppModule } from "./app.module";
+import { AuditLoggingSubscriber } from "./common/audit-logging/audit-logging.subscriber";
 import { getAllowedMethods, getCorsConfig } from "./common/config/cors.config";
+import { CustomBaseExceptionFilter } from "./common/filters/custom-base-exception.filter";
+import { AuditLoggingSubscriberCreatorInterceptor } from "./common/interceptors/audit-logging-subscriber-creator.interceptor";
 import getWinstonLoggerTransports from "./utils/logger";
 
 async function bootstrap() {
@@ -17,12 +20,21 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger,
   });
+  const loggerInstance = app.get(Logger);
+  const auditLoggingSubscriber = app.get(AuditLoggingSubscriber);
+
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
+
+  app.useGlobalFilters(new CustomBaseExceptionFilter(loggerInstance));
+
+  app.useGlobalInterceptors(new AuditLoggingSubscriberCreatorInterceptor(auditLoggingSubscriber));
+
   app.enableVersioning({
     type: VersioningType.URI,
     defaultVersion: "1",
     prefix: "api/v",
   });
+
   app.enableCors({
     methods: getAllowedMethods(),
     ...getCorsConfig(),

@@ -1,4 +1,4 @@
-import { Collection, Entity, Enum, ManyToMany, ManyToOne, PrimaryKey, Rel } from "@mikro-orm/core";
+import { Collection, Entity, Enum, ManyToMany, PrimaryKey } from "@mikro-orm/core";
 import { EntityRepositoryType } from "@mikro-orm/postgresql";
 
 import { EUserRole } from "@/common/enums/roles.enums";
@@ -6,7 +6,6 @@ import { RolesRepository } from "@/modules/roles/roles.repository";
 
 import { CustomBaseEntity } from "./custom-base.entity";
 import { Permission } from "./permissions.entity";
-import { User } from "./users.entity";
 
 @Entity({
   tableName: "roles",
@@ -34,10 +33,4 @@ export class Role extends CustomBaseEntity {
     owner: true,
   })
   permissions = new Collection<Permission>(this);
-
-  @ManyToOne(() => User, { fieldName: "created_by", nullable: true })
-  createdBy?: Rel<User> | null;
-
-  @ManyToOne(() => User, { fieldName: "updated_by", nullable: true })
-  updatedBy?: Rel<User> | null;
 }

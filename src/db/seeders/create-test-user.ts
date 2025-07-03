@@ -25,6 +25,19 @@ export class CreateTestUser extends Seeder {
 
     em.persist(user);
 
+    const secondEmail = "test2@test.app";
+    const secondHashedPassword = await argon2.hash("test123", ARGON2_OPTIONS);
+
+    const secondUser = new User(secondEmail, secondHashedPassword);
+
+    const secondUserProfile = new UserProfile("Test", "User");
+
+    secondUserProfile.user = secondUser;
+    secondUserProfile.role = superUserRole;
+    secondUser.userProfile = secondUserProfile;
+
+    em.persist(secondUser);
+
     await em.flush();
   }
 }

@@ -48,11 +48,8 @@ export class UsersController {
   @Post()
   @UseGuards(RolesGuard)
   @Roles(EUserRole.SUPER_USER)
-  async createUser(
-    @CurrentUser() currentUser: User,
-    @Body() registerUserDto: RegisterUserDto,
-  ): Promise<UserResponse> {
-    const newUser = await this.usersService.createOne(registerUserDto, currentUser);
+  async createUser(@Body() registerUserDto: RegisterUserDto): Promise<UserResponse> {
+    const newUser = await this.usersService.createOne(registerUserDto);
     return this.usersSerializer.serialize(newUser);
   }
 
@@ -60,14 +57,12 @@ export class UsersController {
   @UseGuards(RolesGuard)
   @Roles(EUserRole.SUPER_USER)
   async updateUser(
-    @CurrentUser() currentUser: User,
     @Param("id", ParseIntPipe) userId: number,
     @Body() updateUserAsSuperuserDto: UpdateUserAsSuperuserDto,
   ): Promise<UserResponse> {
     const updatedUser = await this.usersService.updateUserAsSuperuser(
       userId,
       updateUserAsSuperuserDto,
-      currentUser,
     );
     return this.usersSerializer.serialize(updatedUser);
   }

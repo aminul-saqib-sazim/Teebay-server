@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
 import { EntityManager } from "@mikro-orm/core";
@@ -7,14 +7,14 @@ import * as argon2 from "argon2";
 
 import { ARGON2_OPTIONS } from "@/common/config/argon2.config";
 import { Role } from "@/common/entities/roles.entity";
-import { User } from "@/common/entities/users.entity";
 import { EUserRole } from "@/common/enums/roles.enums";
 import { EOAuthProvider } from "@/common/enums/shared.enums";
 import { EVerificationRequestType } from "@/common/enums/verification-requests.enums";
 import { computePaginationMetadata } from "@/utils/pagination";
 
 import { ISignInWithGoogleParams } from "../auth/auth.interfaces";
-import { EmailsService } from "../emails/emails.service";
+import { IEmailService } from "../emails/email-service.interface";
+import { EMAIL_SERVICE_TOKEN } from "../emails/emails.constants";
 import { RolesRepository } from "../roles/roles.repository";
 import { VerificationRequestsService } from "../verification-requests/verification-requests.service";
 import { EMAIL_VERIFICATION_EMAIL_EXPIRATION_IN_MINUTES } from "./users.constants";
@@ -35,7 +35,8 @@ export class UsersService {
     private readonly usersRepository: UsersRepository,
     private readonly rolesRepository: RolesRepository,
     private readonly verificationRequestsService: VerificationRequestsService,
-    private readonly emailsService: EmailsService,
+    @Inject(EMAIL_SERVICE_TOKEN)
+    private readonly emailsService: IEmailService,
     private readonly configService: ConfigService,
   ) {}
 
@@ -66,7 +67,7 @@ export class UsersService {
     return user;
   }
 
-  async createOne(registerUserDto: RegisterUserDto, currentUser: User) {
+  async createOne(registerUserDto: RegisterUserDto) {
     const existingUser = await this.usersRepository.findOne({
       email: registerUserDto.email,
     });
@@ -85,7 +86,6 @@ export class UsersService {
         password: await this.hashPassword(registerUserDto.password),
       },
       role,
-      currentUser,
     );
 
     await this.entityManager.flush();
@@ -102,7 +102,7 @@ export class UsersService {
 
         <p>Visit ${new URL(
           "/sign-in",
-          this.configService.getOrThrow("CLIENT_BASE_URL"),
+          this.configService.getOrThrow("WEB_CLIENT_BASE_URL"),
         )} to login</p>
       `,
     });
@@ -130,7 +130,6 @@ export class UsersService {
       },
       role,
     );
-    newUser.createdBy = newUser;
 
     const verificationRequest =
       this.verificationRequestsService.createAndPersistNewVerificationRequest(
@@ -143,7 +142,7 @@ export class UsersService {
 
     const emailVerificationLink = new URL(
       `/verify?token=${verificationRequest.token}&type=${EVerificationRequestType.EMAIL_VERIFICATION}`,
-      this.configService.getOrThrow("CLIENT_BASE_URL"),
+      this.configService.getOrThrow("WEB_CLIENT_BASE_URL"),
     );
 
     this.emailsService.sendEmailByTextOrHtml({
@@ -162,14 +161,10 @@ export class UsersService {
       userProfile: { role },
     });
 
-    return this.usersRepository.update(user, { password: await this.hashPassword(password) }, user);
+    return this.usersRepository.update(user, { password: await this.hashPassword(password) });
   }
 
-  async updateUserAsSuperuser(
-    userId: number,
-    updateUserAsSuperuserDto: UpdateUserAsSuperuserDto,
-    currentUser: User,
-  ) {
+  async updateUserAsSuperuser(userId: number, updateUserAsSuperuserDto: UpdateUserAsSuperuserDto) {
     const user = await this.findByIdOrThrow(userId);
 
     if (updateUserAsSuperuserDto.password) {
@@ -190,7 +185,6 @@ export class UsersService {
       user,
       updateUserAsSuperuserDto,
       updatedRole,
-      currentUser,
     );
 
     await this.entityManager.flush();

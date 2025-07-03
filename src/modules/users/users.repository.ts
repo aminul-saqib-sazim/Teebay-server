@@ -20,7 +20,7 @@ import {
 
 @Injectable()
 export class UsersRepository extends CustomSQLBaseRepository<User> {
-  createOne(registerUserDto: RegisterUserDto | SelfRegisterUserDto, role: Role, createdBy?: User) {
+  createOne(registerUserDto: RegisterUserDto | SelfRegisterUserDto, role: Role) {
     const {
       email,
       password,
@@ -34,21 +34,13 @@ export class UsersRepository extends CustomSQLBaseRepository<User> {
     user.userProfile = userProfile;
     userProfile.user = user;
 
-    if (createdBy) {
-      user.createdBy = createdBy;
-    }
-
     this.em.persist([user, userProfile]);
 
     return user;
   }
 
-  update(user: User, updateUserDto: UpdateUserDto, updatedBy?: User) {
+  update(user: User, updateUserDto: UpdateUserDto) {
     this.em.assign(user, updateUserDto);
-
-    if (updatedBy) {
-      user.updatedBy = updatedBy;
-    }
 
     this.em.persist(user);
 
@@ -59,7 +51,6 @@ export class UsersRepository extends CustomSQLBaseRepository<User> {
     user: User,
     updateUserAsSuperuserDto: UpdateUserAsSuperuserDto,
     updatedRole?: Role,
-    updatedBy?: User,
   ) {
     const { roleId: _, ...rest } = updateUserAsSuperuserDto;
 
@@ -67,10 +58,6 @@ export class UsersRepository extends CustomSQLBaseRepository<User> {
 
     if (updatedRole) {
       user.userProfile.role = updatedRole;
-    }
-
-    if (updatedBy) {
-      user.updatedBy = updatedBy;
     }
 
     this.em.persist(user);

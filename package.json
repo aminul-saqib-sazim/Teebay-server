@@ -14,7 +14,6 @@
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "dotenv -e ./.env.development.local -- nest start --watch",
-    "start:dev:bucket": "docker compose -f ./docker-compose.localstack.yml up -d && sleep 10 && aws --endpoint-url=http://localhost:4566 s3api create-bucket --bucket project-dev-bucket && yarn run start:dev",
     "start:debug": "dotenv -e ./.env.development.local -- nest start --debug --watch",
     "start:prod": "node dist/src/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",

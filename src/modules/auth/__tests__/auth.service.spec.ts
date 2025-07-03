@@ -7,7 +7,8 @@ import { EntityManager } from "@mikro-orm/core";
 import { mockDeep } from "vitest-mock-extended";
 
 import { AuthService } from "@/modules/auth/auth.service";
-import { EmailsService } from "@/modules/emails/emails.service";
+import { IEmailService } from "@/modules/emails/email-service.interface";
+import { EMAIL_SERVICE_TOKEN } from "@/modules/emails/emails.constants";
 import { RolesService } from "@/modules/roles/roles.service";
 import { UsersService } from "@/modules/users/users.service";
 import { VerificationRequestsService } from "@/modules/verification-requests/verification-requests.service";
@@ -25,7 +26,7 @@ describe("AuthService", () => {
     funcPropSupport: true,
   });
   const mockConfigService = mockDeep<ConfigService>({ funcPropSupport: true });
-  const mockEmailsService = mockDeep<EmailsService>({ funcPropSupport: true });
+  const mockEmailsService = mockDeep<IEmailService>({ funcPropSupport: true });
   const mockEntityManager = mockDeep<EntityManager>({ funcPropSupport: true });
 
   beforeEach(async () => {
@@ -53,7 +54,7 @@ describe("AuthService", () => {
           useValue: mockConfigService,
         },
         {
-          provide: EmailsService,
+          provide: EMAIL_SERVICE_TOKEN,
           useValue: mockEmailsService,
         },
         {

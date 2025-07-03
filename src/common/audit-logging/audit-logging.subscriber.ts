@@ -6,40 +6,33 @@ import { ChangeSet, ChangeSetType, EventSubscriber, FlushEventArgs } from "@mikr
 import { EAuditAction } from "@/common/enums/audit.enums";
 
 import { AuditLog } from "../entities/audit-logs.entity";
-import { CHANGE_SET_TYPES_TO_PROCESS } from "./audit-logging.constants";
+import { User } from "../entities/users.entity";
+import { CHANGE_SET_TYPES_TO_PROCESS, EXCLUDED_ENTITIES } from "./audit-logging.constants";
 
 @Injectable()
-export class AuditLoggingSubscriber<T extends object> implements EventSubscriber<T> {
+export class AuditLoggingSubscriber<T extends object = object> implements EventSubscriber<T> {
   protected readonly logger = new Logger(this.constructor.name);
+
+  private loggedInUser: User | null = null;
 
   constructor(protected readonly configService: ConfigService) {}
 
-  private getChangeSetType(changeSet: ChangeSet<Partial<T>>): EAuditAction | null {
-    switch (changeSet.type) {
-      case ChangeSetType.CREATE:
-        return EAuditAction.CREATE;
-      case ChangeSetType.UPDATE:
-      case ChangeSetType.UPDATE_EARLY:
-        return EAuditAction.UPDATE;
-      case ChangeSetType.DELETE:
-      case ChangeSetType.DELETE_EARLY:
-        return EAuditAction.DELETE;
-      default:
-        return null;
-    }
-  }
-
   onFlush(args: FlushEventArgs): void {
-    const isAuditLoggingEnabled = this.configService.get<boolean>("ENABLE_AUDIT_LOGGING");
-
-    if (!isAuditLoggingEnabled) {
+    if (!this.isAuditLoggingEnabled()) {
       this.logger.log("Audit logging is disabled");
+      return;
+    }
+
+    if (!this.loggedInUser) {
+      this.logger.warn("No logged in user found, skipping audit logging");
       return;
     }
 
     const changeSetsFromUnitOfWork = args.uow.getChangeSets();
     const changeSetsForEntity: Array<ChangeSet<Partial<T>>> = changeSetsFromUnitOfWork.filter(
-      (changeSet) => CHANGE_SET_TYPES_TO_PROCESS.includes(changeSet.type),
+      (changeSet) =>
+        CHANGE_SET_TYPES_TO_PROCESS.includes(changeSet.type) &&
+        !EXCLUDED_ENTITIES.includes(changeSet.entity.constructor.name),
     );
 
     if (!changeSetsForEntity.length) {
@@ -69,30 +62,11 @@ export class AuditLoggingSubscriber<T extends object> implements EventSubscriber
 
       if ([EAuditAction.UPDATE, EAuditAction.DELETE].includes(changeSetType)) {
         auditEntry.previousState = currentChangeSet.originalEntity ?? {};
-
         auditEntry.currentState = currentChangeSet.payload;
-
-        if (
-          "updatedBy" in currentChangeSet.entity &&
-          typeof currentChangeSet.entity.updatedBy === "object" &&
-          !!currentChangeSet.entity.updatedBy &&
-          "id" in currentChangeSet.entity.updatedBy &&
-          typeof currentChangeSet.entity.updatedBy.id === "number"
-        ) {
-          auditEntry.actorId = currentChangeSet.entity.updatedBy.id;
-        }
+        auditEntry.actorId = this.loggedInUser.id;
       } else {
         auditEntry.currentState = currentChangeSet.payload;
-
-        if (
-          "createdBy" in currentChangeSet.entity &&
-          typeof currentChangeSet.entity.createdBy === "object" &&
-          !!currentChangeSet.entity.createdBy &&
-          "id" in currentChangeSet.entity.createdBy &&
-          typeof currentChangeSet.entity.createdBy.id === "number"
-        ) {
-          auditEntry.actorId = currentChangeSet.entity.createdBy.id;
-        }
+        auditEntry.actorId = this.loggedInUser.id;
       }
 
       if (!auditEntry.actorId) {
@@ -104,6 +78,32 @@ export class AuditLoggingSubscriber<T extends object> implements EventSubscriber
 
       args.uow.computeChangeSet(auditEntry);
       args.uow.recomputeSingleChangeSet(currentChangeSet.entity);
+    }
+
+    this.loggedInUser = null;
+  }
+
+  setLoggedInUser(user: User): void {
+    this.loggedInUser = user;
+  }
+
+  private isAuditLoggingEnabled(): boolean {
+    const isAuditLoggingEnabled = this.configService.get<string>("ENABLE_AUDIT_LOGGING");
+    return isAuditLoggingEnabled === "true";
+  }
+
+  private getChangeSetType(changeSet: ChangeSet<Partial<T>>): EAuditAction | null {
+    switch (changeSet.type) {
+      case ChangeSetType.CREATE:
+        return EAuditAction.CREATE;
+      case ChangeSetType.UPDATE:
+      case ChangeSetType.UPDATE_EARLY:
+        return EAuditAction.UPDATE;
+      case ChangeSetType.DELETE:
+      case ChangeSetType.DELETE_EARLY:
+        return EAuditAction.DELETE;
+      default:
+        return null;
     }
   }
 }

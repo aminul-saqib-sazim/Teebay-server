@@ -1,1 +1,1 @@
-export const SEND_FROM_EMAIL = "test.email@example.com";
+export const EMAIL_SERVICE_TOKEN = Symbol("EMAIL_SERVICE_TOKEN");

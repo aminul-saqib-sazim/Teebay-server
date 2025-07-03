@@ -25,8 +25,9 @@ import { JwtAuthGuard } from "@/modules/auth/guards/jwt-auth.guard";
 import { PermissionsGuard } from "@/modules/auth/guards/permissions.guard";
 import { RolesGuard } from "@/modules/auth/guards/roles.guard";
 import { GoogleStrategy } from "@/modules/auth/strategies/google.strategy";
+import { IEmailService } from "@/modules/emails/email-service.interface";
+import { EMAIL_SERVICE_TOKEN } from "@/modules/emails/emails.constants";
 import { EmailsModule } from "@/modules/emails/emails.module";
-import { EmailsService } from "@/modules/emails/emails.service";
 import { RolesModule } from "@/modules/roles/roles.module";
 import { RolesService } from "@/modules/roles/roles.service";
 import { UserProfilesModule } from "@/modules/user-profiles/user-profiles.module";
@@ -86,8 +87,8 @@ describe("Authorization", () => {
       controllers: [DummyController],
       providers: [RolesService],
     })
-      .overrideProvider(EmailsService)
-      .useValue(mockDeep<EmailsService>({ funcPropSupport: true }))
+      .overrideProvider(EMAIL_SERVICE_TOKEN)
+      .useValue(mockDeep<IEmailService>({ funcPropSupport: true }))
       .overrideProvider(ConfigService)
       .useValue(mockDeep<ConfigService>({ funcPropSupport: true }))
       .overrideProvider(GoogleStrategy)
