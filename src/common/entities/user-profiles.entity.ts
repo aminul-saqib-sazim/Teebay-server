@@ -40,10 +40,11 @@ export class UserProfile extends CustomBaseEntity {
   lastName!: string;
 
   @Property({ persist: false })
-  get email() {
-    return this.user === undefined
-      ? new BadRequestException("User not properly defined")
-      : this.user.email;
+  get email(): string {
+    if (!this.user) {
+      throw new BadRequestException("User not properly defined");
+    }
+    return this.user.email;
   }
 
   @OneToOne(() => User, { hidden: true })
