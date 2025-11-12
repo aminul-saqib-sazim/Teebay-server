@@ -8,6 +8,7 @@ jobs:
   tests:
     name: E2E and Unit Tests
     runs-on: self-hosted
+    timeout-minutes: 15
 
     env:
       NODE_ENV: test
@@ -18,7 +19,6 @@ jobs:
       AWS_S3_BUCKET_NAME: project-dev-bucket
       AWS_S3_PRESIGN_URL_EXPIRY_IN_MINUTES: 5
       SENDGRID_API_KEY: SG.xxxxx
-      YARN_CACHE_FOLDER: ${{ github.workspace }}/tests/.yarn-cache
       ENABLE_AUDIT_LOGGING: true
       GOOGLE_CLIENT_ID: xxxxx
       GOOGLE_CLIENT_SECRET: xxxxx
@@ -26,9 +26,6 @@ jobs:
       SEND_FROM_EMAIL: test@example.com
 
     steps:
-      - name: Clean workspace
-        run: rm -rf *
-
       - name: Generate Dynamic Ports
         id: dynamic-env
         run: |
@@ -38,25 +35,30 @@ jobs:
           echo "S3_PORT=$(shuf -i 6000-6999 -n 1)" >> $GITHUB_ENV
 
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: ./.github/actions/setup-nvm
-
-      - name: Restore caches
-        uses: ./.github/actions/cache-deps
+        uses: actions/setup-node@v4
         with:
-          operation: restore
-          job-type: test
+          node-version-file: ".nvmrc"
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Get yarn cache directory
+        id: yarn-cache-dir
+        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache yarn dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.yarn-cache-dir.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile --prefer-offline
-
-      - name: Save caches
-        uses: ./.github/actions/cache-deps
-        with:
-          operation: save
-          job-type: test
 
       - name: Setup Database Service
         run: |
@@ -68,6 +70,17 @@ jobs:
             --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5 \
             -d postgres:14
 
+          echo "Waiting for PostgreSQL to be healthy..."
+          until [ "$(docker inspect --format='{{.State.Health.Status}}' project_test_db_${{ github.run_id }})" == "healthy" ]; do
+            echo "PostgreSQL is still starting..."
+            sleep 2
+          done
+          echo "PostgreSQL is healthy!"
+
+          docker exec project_test_db_${{ github.run_id }} \
+            psql -U postgres -d project_test_db \
+            -c 'CREATE EXTENSION IF NOT EXISTS pg_trgm;'
+            
       - name: Set Dynamic Environment Variables
         run: |
           echo "DATABASE_URL=postgresql://postgres:postgres@localhost:$DB_PORT/project_test_db?schema=public" >> $GITHUB_ENV
@@ -88,4 +101,3 @@ jobs:
         if: always()
         run: |
           docker rm -f project_test_db_${{ github.run_id }} || true
-          rm -rf *

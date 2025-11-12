@@ -8,6 +8,7 @@
   "engines": {
     "node": ">=20.11"
   },
+  "packageManager": "yarn@1.22.22",
   "scripts": {
     "prepare": "husky install",
     "build": "nest build",
