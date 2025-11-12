@@ -19,13 +19,13 @@ import {
   DOCUSEAL_TEMPLATE_FOLDER_NAME,
   DOCUSEAL_TEMPLATE_NAME,
 } from "./document-signing.constants";
-import {
+import type {
   TDocusealCreateTemplateRequest,
   TDocusealCreateTemplateResponse,
   TDocusealSubmissionRequest,
   TDocusealSubmitter,
-  TDocusealWebhookPayload,
 } from "./document-signing.types";
+import { type TDocusealWebhookPayload } from "./document-signing.types";
 
 @Injectable()
 export class DocumentSigningService {

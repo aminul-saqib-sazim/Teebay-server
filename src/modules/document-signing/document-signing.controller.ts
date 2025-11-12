@@ -12,7 +12,7 @@ import { ResponseTransformInterceptor } from "@/common/interceptors/response-tra
 import { JwtAuthGuard } from "@/modules/auth/guards/jwt-auth.guard";
 
 import { DocumentSigningService } from "./document-signing.service";
-import { TDocusealWebhookPayload } from "./document-signing.types";
+import { type TDocusealWebhookPayload } from "./document-signing.types";
 
 @UseInterceptors(ResponseTransformInterceptor)
 @UseGuards(JwtAuthGuard)

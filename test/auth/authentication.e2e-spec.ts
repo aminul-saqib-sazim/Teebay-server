@@ -1,4 +1,5 @@
-import { HttpStatus, INestApplication } from "@nestjs/common";
+import type { INestApplication } from "@nestjs/common";
+import { HttpStatus } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
 import type { IDatabaseDriver, Connection, EntityManager, MikroORM } from "@mikro-orm/core";
@@ -6,7 +7,7 @@ import type { IDatabaseDriver, Connection, EntityManager, MikroORM } from "@mikr
 import { faker } from "@faker-js/faker";
 import dayjs from "dayjs";
 import request from "supertest";
-import { DeepMockProxy } from "vitest-mock-extended";
+import type { DeepMockProxy } from "vitest-mock-extended";
 
 import { User } from "@/common/entities/users.entity";
 import { VerificationRequest } from "@/common/entities/verification-requests.entity";
@@ -15,7 +16,7 @@ import {
   EVerificationRequestStatus,
   EVerificationRequestType,
 } from "@/common/enums/verification-requests.enums";
-import { IEmailService } from "@/modules/emails/email-service.interface";
+import { type IEmailService } from "@/modules/emails/email-service.interface";
 import { EMAIL_SERVICE_TOKEN } from "@/modules/emails/emails.constants";
 import * as cryptoHelpers from "@/utils/crypto-helper";
 
@@ -24,7 +25,7 @@ import { truncateTables } from "../utils/db";
 import { UserFactory, UserProfileFactory } from "../utils/factories/users.factory";
 import { VerificationRequestFactory } from "../utils/factories/verification-requests.factory";
 import { createUserInDb } from "../utils/helpers/create-user-in-db.helpers";
-import { THttpServer } from "../utils/types";
+import type { THttpServer } from "../utils/types";
 import { seedPermissionsData } from "./auth.helpers";
 import { MOCK_AUTH_EMAIL, MOCK_AUTH_PASS } from "./auth.mock";
 

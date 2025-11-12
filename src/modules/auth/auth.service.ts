@@ -7,7 +7,7 @@ import { EntityManager } from "@mikro-orm/core";
 import * as argon2 from "argon2";
 
 import { ARGON2_OPTIONS } from "@/common/config/argon2.config";
-import { User } from "@/common/entities/users.entity";
+import type { User } from "@/common/entities/users.entity";
 import { EOAuthProvider } from "@/common/enums/shared.enums";
 import {
   EVerificationRequestStatus,
@@ -16,15 +16,15 @@ import {
 import { RolesService } from "@/modules/roles/roles.service";
 import { UsersService } from "@/modules/users/users.service";
 
-import { IEmailService } from "../emails/email-service.interface";
+import { type IEmailService } from "../emails/email-service.interface";
 import { EMAIL_SERVICE_TOKEN } from "../emails/emails.constants";
 import { VerificationRequestsService } from "../verification-requests/verification-requests.service";
 import {
   INVALID_USER_CREDENTIALS,
   RESET_PASSWORD_TOKEN_EXPIRATION_DURATION_IN_MINUTES,
 } from "./auth.constants";
-import { ChangePasswordDto } from "./auth.dtos";
-import { IJwtPayload, ISignInWithGoogleParams } from "./auth.interfaces";
+import type { ChangePasswordDto } from "./auth.dtos";
+import type { IJwtPayload, ISignInWithGoogleParams } from "./auth.interfaces";
 
 @Injectable()
 export class AuthService {

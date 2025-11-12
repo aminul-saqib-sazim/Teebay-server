@@ -93,7 +93,56 @@ You should see this output:
 ```
 
 
-## Running the app
+## Using Bun
+
+This project supports [Bun](https://bun.com/) as an alternative JavaScript runtime that offers faster performance compared to Node.js.
+
+### Installing Bun
+
+To install Bun, run the following command:
+
+```bash
+# For macOS, Linux, and WSL
+curl -fsSL https://bun.sh/install | bash
+
+# Alternatively, you can use npm
+npm install -g bun
+```
+
+Verify your installation:
+
+```bash
+bun --version
+```
+
+### Running with Bun
+
+The project includes several scripts for running with Bun:
+
+```bash
+# Install dependencies with Bun
+$ bun install
+
+# Run in development mode with auto-reloading
+$ bun run start:bun:dev
+
+# Run in production mode with built files
+$ bun run build
+$ bun run start:bun
+
+# Debug mode with inspector
+$ bun run start:bun:debug
+
+# Run tests with Bun
+$ bun run test:bun
+$ bun run test:bun:e2e
+```
+
+### Bun Configuration
+
+The project includes a Bun-specific configuration file (`bunfig.toml`) and TypeScript configuration (`tsconfig.bun.json`) optimized for Bun's runtime.
+
+## Running the app with Node.js
 
 ```bash
 # development

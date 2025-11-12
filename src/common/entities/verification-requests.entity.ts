@@ -5,7 +5,7 @@ import {
   ManyToOne,
   PrimaryKey,
   Property,
-  Rel,
+  type Rel,
 } from "@mikro-orm/core";
 
 import { VerificationRequestsRepository } from "@/modules/verification-requests/verification-requests.repository";

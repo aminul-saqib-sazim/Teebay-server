@@ -1,9 +1,10 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
-import sgMail, { MailDataRequired } from "@sendgrid/mail";
+import type { MailDataRequired } from "@sendgrid/mail";
+import sgMail from "@sendgrid/mail";
 
-import { IEmailService } from "./email-service.interface";
+import { type IEmailService } from "./email-service.interface";
 
 @Injectable()
 export class SendgridEmailService implements IEmailService {

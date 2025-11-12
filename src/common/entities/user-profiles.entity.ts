@@ -5,7 +5,7 @@ import {
   OneToOne,
   PrimaryKey,
   Property,
-  Rel,
+  type Rel,
   ManyToOne,
   EntityRepositoryType,
 } from "@mikro-orm/core";

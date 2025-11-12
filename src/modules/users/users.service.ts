@@ -6,19 +6,19 @@ import { EntityManager } from "@mikro-orm/core";
 import * as argon2 from "argon2";
 
 import { ARGON2_OPTIONS } from "@/common/config/argon2.config";
-import { Role } from "@/common/entities/roles.entity";
+import type { Role } from "@/common/entities/roles.entity";
 import { EUserRole } from "@/common/enums/roles.enums";
-import { EOAuthProvider } from "@/common/enums/shared.enums";
+import type { EOAuthProvider } from "@/common/enums/shared.enums";
 import { EVerificationRequestType } from "@/common/enums/verification-requests.enums";
 import { computePaginationMetadata } from "@/utils/pagination";
 
-import { ISignInWithGoogleParams } from "../auth/auth.interfaces";
-import { IEmailService } from "../emails/email-service.interface";
+import type { ISignInWithGoogleParams } from "../auth/auth.interfaces";
+import { type IEmailService } from "../emails/email-service.interface";
 import { EMAIL_SERVICE_TOKEN } from "../emails/emails.constants";
 import { RolesRepository } from "../roles/roles.repository";
 import { VerificationRequestsService } from "../verification-requests/verification-requests.service";
 import { EMAIL_VERIFICATION_EMAIL_EXPIRATION_IN_MINUTES } from "./users.constants";
-import {
+import type {
   UpdateUserAsSuperuserDto,
   RegisterUserDto,
   SelfRegisterUserDto,

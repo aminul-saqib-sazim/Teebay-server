@@ -4,19 +4,15 @@ import { User } from "@/common/entities/users.entity";
 import { EUserRole } from "@/common/enums/roles.enums";
 import { ResponseTransformInterceptor } from "@/common/interceptors/response-transform.interceptor";
 
-import { SelfRegisterUserDto, UserResponse } from "../users/users.dtos";
+import type { UserResponse } from "../users/users.dtos";
+import { SelfRegisterUserDto } from "../users/users.dtos";
 import { UsersSerializer } from "../users/users.serializer";
 import { UsersService } from "../users/users.service";
 import { FORGOT_PASSWORD_EMAIL_SENT_MESSAGE } from "./auth.constants";
-import {
-  ChangePasswordDto,
-  ForgotPasswordDto,
-  ResetPasswordDto,
-  SendForgotPasswordEmailResponse,
-  SignInResponse,
-} from "./auth.dtos";
+import type { SendForgotPasswordEmailResponse, SignInResponse } from "./auth.dtos";
+import { ChangePasswordDto, ForgotPasswordDto, ResetPasswordDto } from "./auth.dtos";
 import { makeTokenizedUser } from "./auth.helpers";
-import { IGoogleOnlineUser } from "./auth.interfaces";
+import { type IGoogleOnlineUser } from "./auth.interfaces";
 import { AuthService } from "./auth.service";
 import { CurrentUser } from "./decorators/current-user.decorator";
 import { GoogleIdTokenGuard } from "./guards/google-id-token.guard";

@@ -1,15 +1,11 @@
-import {
-  INestApplication,
-  Controller,
-  Get,
-  UseGuards,
-  ValidationPipe,
-  HttpStatus,
-} from "@nestjs/common";
+import type { INestApplication } from "@nestjs/common";
+import { Controller, Get, UseGuards, ValidationPipe, HttpStatus } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { TestingModule, Test } from "@nestjs/testing";
+import type { TestingModule } from "@nestjs/testing";
+import { Test } from "@nestjs/testing";
 
-import { EntityManager, IDatabaseDriver, Connection, MikroORM } from "@mikro-orm/core";
+import type { EntityManager, IDatabaseDriver, Connection } from "@mikro-orm/core";
+import { MikroORM } from "@mikro-orm/core";
 import { MikroOrmModule } from "@mikro-orm/nestjs";
 
 import { faker } from "@faker-js/faker";
@@ -25,7 +21,7 @@ import { JwtAuthGuard } from "@/modules/auth/guards/jwt-auth.guard";
 import { PermissionsGuard } from "@/modules/auth/guards/permissions.guard";
 import { RolesGuard } from "@/modules/auth/guards/roles.guard";
 import { GoogleStrategy } from "@/modules/auth/strategies/google.strategy";
-import { IEmailService } from "@/modules/emails/email-service.interface";
+import { type IEmailService } from "@/modules/emails/email-service.interface";
 import { EMAIL_SERVICE_TOKEN } from "@/modules/emails/emails.constants";
 import { EmailsModule } from "@/modules/emails/emails.module";
 import { RolesModule } from "@/modules/roles/roles.module";
@@ -35,7 +31,7 @@ import { UsersModule } from "@/modules/users/users.module";
 import { VerificationRequestsModule } from "@/modules/verification-requests/verification-requests.module";
 import { PermissionsModule } from "@/permissions/permissions.module";
 
-import { bootstrapTestServer } from "../utils/bootstrap";
+import type { bootstrapTestServer } from "../utils/bootstrap";
 import { truncateTables } from "../utils/db";
 import { createUserInDb } from "../utils/helpers/create-user-in-db.helpers";
 import { seedPermissionsData } from "./auth.helpers";

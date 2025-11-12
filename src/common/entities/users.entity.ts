@@ -7,7 +7,7 @@ import {
   OneToOne,
   PrimaryKey,
   Property,
-  Rel,
+  type Rel,
 } from "@mikro-orm/core";
 
 import { UsersRepository } from "@/modules/users/users.repository";

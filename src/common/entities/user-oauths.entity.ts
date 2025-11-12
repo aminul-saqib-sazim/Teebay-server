@@ -1,4 +1,4 @@
-import { Entity, PrimaryKey, ManyToOne, Rel, Enum, Property } from "@mikro-orm/core";
+import { Entity, PrimaryKey, ManyToOne, type Rel, Enum, Property } from "@mikro-orm/core";
 
 import { EOAuthProvider } from "../enums/shared.enums";
 import { CustomBaseEntity } from "./custom-base.entity";

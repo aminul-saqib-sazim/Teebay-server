@@ -1,13 +1,14 @@
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
-import { Test, TestingModule } from "@nestjs/testing";
+import type { TestingModule } from "@nestjs/testing";
+import { Test } from "@nestjs/testing";
 
 import { EntityManager } from "@mikro-orm/core";
 
 import { mockDeep } from "vitest-mock-extended";
 
 import { AuthService } from "@/modules/auth/auth.service";
-import { IEmailService } from "@/modules/emails/email-service.interface";
+import { type IEmailService } from "@/modules/emails/email-service.interface";
 import { EMAIL_SERVICE_TOKEN } from "@/modules/emails/emails.constants";
 import { RolesService } from "@/modules/roles/roles.service";
 import { UsersService } from "@/modules/users/users.service";
