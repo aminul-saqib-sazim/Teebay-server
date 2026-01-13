@@ -1,228 +1,164 @@
-import { BadRequestException, Inject, Injectable, Logger } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
+import { Injectable, NotFoundException } from "@nestjs/common";
 
 import { EntityManager } from "@mikro-orm/core";
 
-import * as argon2 from "argon2";
-
-import { ARGON2_OPTIONS } from "@/common/config/argon2.config";
-import type { Role } from "@/common/entities/roles.entity";
+import type { User } from "@/common/entities/users.entity";
 import { EUserRole } from "@/common/enums/roles.enums";
-import type { EOAuthProvider } from "@/common/enums/shared.enums";
-import { EVerificationRequestType } from "@/common/enums/verification-requests.enums";
-import { computePaginationMetadata } from "@/utils/pagination";
 
-import type { ISignInWithGoogleParams } from "../auth/auth.interfaces";
-import { type IEmailService } from "../emails/email-service.interface";
-import { EMAIL_SERVICE_TOKEN } from "../emails/emails.constants";
-import { RolesRepository } from "../roles/roles.repository";
-import { VerificationRequestsService } from "../verification-requests/verification-requests.service";
-import { EMAIL_VERIFICATION_EMAIL_EXPIRATION_IN_MINUTES } from "./users.constants";
+import { AuthService } from "../auth/auth.service";
 import type {
-  UpdateUserAsSuperuserDto,
-  RegisterUserDto,
-  SelfRegisterUserDto,
-  SuperuserFindAllUsersParams,
+  InviteUserDto,
+  ListUsersQueryDto,
+  UpdateProfileDto,
+  UpdateUserDto,
 } from "./users.dtos";
+import type {
+  IInviteUserResponse,
+  IPaginatedUsersResponse,
+  IUserResponse,
+} from "./users.interface";
 import { UsersRepository } from "./users.repository";
 
 @Injectable()
 export class UsersService {
-  private readonly logger = new Logger(UsersService.name);
-
   constructor(
-    private readonly entityManager: EntityManager,
     private readonly usersRepository: UsersRepository,
-    private readonly rolesRepository: RolesRepository,
-    private readonly verificationRequestsService: VerificationRequestsService,
-    @Inject(EMAIL_SERVICE_TOKEN)
-    private readonly emailsService: IEmailService,
-    private readonly configService: ConfigService,
+    private readonly authService: AuthService,
+    private readonly em: EntityManager,
   ) {}
 
-  private hashPassword(password: string) {
-    return argon2.hash(password, ARGON2_OPTIONS);
-  }
-
-  async findByIdOrThrow(id: number) {
-    const user = await this.usersRepository.findOneOrFail(id, {
-      populate: ["userProfile", "userProfile.role"],
-    });
-    return user;
-  }
-
-  findByEmail(email: string) {
-    return this.usersRepository.findOne({ email });
-  }
-
-  async findByEmailOrThrow(email: string) {
-    const user = await this.usersRepository.findOneOrFail(
-      {
-        email,
-      },
-      {
-        populate: ["userProfile", "userProfile.role"],
-      },
-    );
-    return user;
-  }
-
-  async createOne(registerUserDto: RegisterUserDto) {
-    const existingUser = await this.usersRepository.findOne({
-      email: registerUserDto.email,
-    });
-
-    if (existingUser) {
-      throw new BadRequestException("User already exists");
-    }
-
-    const role = await this.rolesRepository.findOneOrFail({
-      id: registerUserDto.userProfile.roleId,
-    });
-
-    const newUser = this.usersRepository.createOne(
-      {
-        ...registerUserDto,
-        password: await this.hashPassword(registerUserDto.password),
-      },
-      role,
-    );
-
-    await this.entityManager.flush();
-
-    this.emailsService.sendEmailByTextOrHtml({
-      to: newUser.email,
-      subject: "Welcome",
-      text: "Welcome to our platform",
-      html: `
-        <h1>Welcome to our platform</h1>
-        <p>Your user credentials are:</p>
-        <p>Email: ${newUser.email}</p>
-        <p>Temporary Password: ${registerUserDto.password}</p>
-
-        <p>Visit ${new URL(
-          "/sign-in",
-          this.configService.getOrThrow("WEB_CLIENT_BASE_URL"),
-        )} to login</p>
-      `,
-    });
-
-    return newUser;
-  }
-
-  async selfRegister(selfRegisterUserDto: SelfRegisterUserDto, roleName = EUserRole.ADMIN) {
-    const existingUser = await this.usersRepository.findOne({
-      email: selfRegisterUserDto.email,
-    });
-
-    if (existingUser) {
-      throw new BadRequestException("User already exists");
-    }
-
-    const role = await this.rolesRepository.findOneOrFail({
-      name: roleName,
-    });
-
-    const newUser = this.usersRepository.createOne(
-      {
-        ...selfRegisterUserDto,
-        password: await this.hashPassword(selfRegisterUserDto.password),
-      },
-      role,
-    );
-
-    const verificationRequest =
-      this.verificationRequestsService.createAndPersistNewVerificationRequest(
-        newUser,
-        EVerificationRequestType.EMAIL_VERIFICATION,
-        EMAIL_VERIFICATION_EMAIL_EXPIRATION_IN_MINUTES,
-      );
-
-    await this.entityManager.flush();
-
-    const emailVerificationLink = new URL(
-      `/verify?token=${verificationRequest.token}&type=${EVerificationRequestType.EMAIL_VERIFICATION}`,
-      this.configService.getOrThrow("WEB_CLIENT_BASE_URL"),
-    );
-
-    this.emailsService.sendEmailByTextOrHtml({
-      to: newUser.email,
-      subject: "Email Verification",
-      text: `Click the link to verify your email: ${emailVerificationLink}`,
-      html: `Click the link to verify your email: <a href="${emailVerificationLink}">${emailVerificationLink}</a>`,
-    });
-
-    return newUser;
-  }
-
-  async updatePassword(userId: number, password: string, role: Role) {
-    const user = await this.usersRepository.findOneOrFail({
-      id: userId,
-      userProfile: { role },
-    });
-
-    return this.usersRepository.update(user, { password: await this.hashPassword(password) });
-  }
-
-  async updateUserAsSuperuser(userId: number, updateUserAsSuperuserDto: UpdateUserAsSuperuserDto) {
-    const user = await this.findByIdOrThrow(userId);
-
-    if (updateUserAsSuperuserDto.password) {
-      updateUserAsSuperuserDto.password = await this.hashPassword(
-        updateUserAsSuperuserDto.password,
-      );
-    }
-
-    let updatedRole: Role | undefined;
-
-    if (updateUserAsSuperuserDto.roleId) {
-      updatedRole = await this.rolesRepository.findOneOrFail({
-        id: updateUserAsSuperuserDto.roleId,
-      });
-    }
-
-    const updatedUser = this.usersRepository.updateAsSuperuser(
-      user,
-      updateUserAsSuperuserDto,
-      updatedRole,
-    );
-
-    await this.entityManager.flush();
-
-    return updatedUser;
-  }
-
-  async findAll(params: SuperuserFindAllUsersParams, currentUserId: number) {
-    const { page, limit } = params;
-    const [users, total] = await this.usersRepository.findAllPaginated(params, currentUserId);
-
+  private toUserResponse(user: User): IUserResponse {
     return {
-      data: users,
-      meta: computePaginationMetadata({
-        page,
-        limit,
-        totalItems: total,
-      }),
+      id: user.id,
+      email: user.email,
+      emailVerified: user.emailVerified,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      name: user.name,
+      image: user.image,
+      state: user.state,
+      firstLoginAt: user.firstLoginAt,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
     };
   }
 
-  async createWithOAuthProvider(input: ISignInWithGoogleParams, provider: EOAuthProvider) {
-    const role = await this.rolesRepository.findOneOrFail({ name: input.roleName });
+  async getCurrentUser(userId: string): Promise<IUserResponse> {
+    const user = await this.usersRepository.findById(userId);
 
-    const entityManager = this.usersRepository.getEntityManager().fork();
+    if (!user) {
+      throw new NotFoundException("User not found");
+    }
 
-    await entityManager.begin();
+    return this.toUserResponse(user);
+  }
 
+  async updateProfile(userId: string, dto: UpdateProfileDto): Promise<IUserResponse> {
+    const user = await this.usersRepository.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException("User not found");
+    }
+
+    const updateData: Partial<User> = {};
+    if (dto.firstName !== undefined) updateData.firstName = dto.firstName;
+    if (dto.lastName !== undefined) updateData.lastName = dto.lastName;
+    if (dto.name !== undefined) updateData.name = dto.name;
+    if (dto.image !== undefined) updateData.image = dto.image;
+
+    if (dto.firstName || dto.lastName) {
+      updateData.name = `${dto.firstName ?? user.firstName} ${dto.lastName ?? user.lastName}`;
+    }
+
+    const updatedUser = await this.usersRepository.update(userId, updateData);
+
+    if (!updatedUser) {
+      throw new NotFoundException("User not found");
+    }
+
+    await this.em.flush();
+    return this.toUserResponse(updatedUser);
+  }
+
+  async listUsers(
+    query: ListUsersQueryDto,
+    organizationId: string,
+  ): Promise<IPaginatedUsersResponse> {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
+
+    const { users, total } = await this.usersRepository.findAllPaginated({
+      page,
+      limit,
+      search: query.search,
+      state: query.state,
+      organizationId,
+    });
+
+    return {
+      data: users.map((user) => this.toUserResponse(user)),
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  async updateUser(userId: string, dto: UpdateUserDto): Promise<IUserResponse> {
+    const user = await this.usersRepository.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException("User not found");
+    }
+
+    const updateData: Partial<User> = {};
+    if (dto.firstName !== undefined) updateData.firstName = dto.firstName;
+    if (dto.lastName !== undefined) updateData.lastName = dto.lastName;
+    if (dto.name !== undefined) updateData.name = dto.name;
+    if (dto.image !== undefined) updateData.image = dto.image;
+    if (dto.state !== undefined) updateData.state = dto.state;
+
+    if (dto.firstName || dto.lastName) {
+      updateData.name = `${dto.firstName ?? user.firstName} ${dto.lastName ?? user.lastName}`;
+    }
+
+    const updatedUser = await this.usersRepository.update(userId, updateData);
+
+    if (!updatedUser) {
+      throw new NotFoundException("User not found");
+    }
+
+    await this.em.flush();
+    return this.toUserResponse(updatedUser);
+  }
+
+  async inviteUser(
+    dto: InviteUserDto,
+    organizationId: string,
+    inviterHeaders: Headers,
+  ): Promise<IInviteUserResponse> {
     try {
-      const newUser = this.usersRepository.createWithOAuthProvider(input, provider, role);
+      await this.authService.auth.api.createInvitation({
+        headers: inviterHeaders,
+        body: {
+          email: dto.email,
+          role: dto.role ?? EUserRole.MEMBER,
+          organizationId,
+        },
+      });
 
-      await entityManager.commit();
-
-      return newUser;
+      return {
+        success: true,
+        message: `Invitation sent to ${dto.email}`,
+      };
     } catch (error) {
-      this.logger.error("Create user with oauth transaction failed", error);
-      await entityManager.rollback();
-      throw error;
+      const message = error instanceof Error ? error.message : "Failed to send invitation";
+      return {
+        success: false,
+        message,
+      };
     }
   }
 }

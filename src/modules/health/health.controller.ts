@@ -9,12 +9,15 @@ import {
   MikroOrmHealthIndicator,
 } from "@nestjs/terminus";
 
+import { Public } from "@/common/decorators/auth/public.decorator";
+
 import {
   HEAP_MEMORY_THRESHOLD_IN_BYTES,
   RSS_MEMORY_THRESHOLD_IN_BYTES,
   STORAGE_THRESHOLD_PERCENT,
 } from "./health.constants";
 
+@Public()
 @Controller("health")
 export class HealthController {
   constructor(

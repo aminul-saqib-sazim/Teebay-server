@@ -1,59 +1,49 @@
-import {
-  Collection,
-  Entity,
-  EntityRepositoryType,
-  Enum,
-  OneToMany,
-  OneToOne,
-  PrimaryKey,
-  Property,
-  type Rel,
-} from "@mikro-orm/core";
+import { Collection, Entity, Enum, OneToMany, PrimaryKey, Property, Unique } from "@mikro-orm/core";
 
+import { EUserState } from "@/common/enums/users.enums";
 import { UsersRepository } from "@/modules/users/users.repository";
 
-import { EUserState } from "../enums/users.enums";
+import { Account } from "./accounts.entity";
 import { CustomBaseEntity } from "./custom-base.entity";
-import { UserProfile } from "./user-profiles.entity";
-import { VerificationRequest } from "./verification-requests.entity";
+import { Member } from "./members.entity";
+import { Session } from "./sessions.entity";
 
-@Entity({
-  tableName: "users",
-  repository: () => UsersRepository,
-})
+@Entity({ tableName: "users", repository: () => UsersRepository })
 export class User extends CustomBaseEntity {
-  [EntityRepositoryType]?: UsersRepository;
+  @PrimaryKey({ type: "uuid", defaultRaw: "gen_random_uuid()" })
+  id!: string;
 
-  constructor(email: string, password?: string) {
-    super();
-
-    this.email = email;
-    this.password = password;
-  }
-
-  @PrimaryKey({ autoincrement: true })
-  id!: number;
-
-  @Property({ unique: true })
+  @Property()
+  @Unique()
   email!: string;
 
-  @Property({ nullable: true })
-  password?: string | null;
+  @Property({ default: false })
+  emailVerified!: boolean;
 
-  @Enum({ items: () => EUserState, fieldName: "state" })
+  @Property()
+  firstName!: string;
+
+  @Property()
+  lastName!: string;
+
+  @Property()
+  name!: string;
+
+  @Property({ nullable: true })
+  image?: string;
+
+  @Enum(() => EUserState)
   state: EUserState = EUserState.ACTIVE;
 
-  @Property({ fieldName: "verified_at", nullable: true })
-  verifiedAt?: Date | null;
+  @Property({ nullable: true })
+  firstLoginAt?: Date;
 
-  @Property({ fieldName: "first_login_at", nullable: true })
-  firstLoginAt?: Date | null;
+  @OneToMany(() => Session, (session) => session.user)
+  sessions = new Collection<Session>(this);
 
-  @OneToOne(() => UserProfile, { mappedBy: (userProfile) => userProfile.user })
-  userProfile!: Rel<UserProfile>;
+  @OneToMany(() => Account, (account) => account.user)
+  accounts = new Collection<Account>(this);
 
-  @OneToMany(() => VerificationRequest, (verificationRequest) => verificationRequest.user, {
-    nullable: true,
-  })
-  verificationRequests = new Collection<VerificationRequest>(this);
+  @OneToMany(() => Member, (member) => member.user)
+  memberships = new Collection<Member>(this);
 }

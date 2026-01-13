@@ -9,7 +9,7 @@ export class AuditLog extends CustomBaseEntity {
   id!: number;
 
   @Property({ fieldName: "actor_id", nullable: true })
-  actorId?: number | null;
+  actorId?: string | null;
 
   @Property({ fieldName: "entity_name" })
   entityName!: string;

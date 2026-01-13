@@ -1,4 +1,4 @@
-import { IEnvironmentVariables } from "./common/interfaces/environment-variables.interface";
+import type { IEnvironmentVariables } from "./common/interfaces/environment-variables.interface";
 
 declare global {
   namespace NodeJS {

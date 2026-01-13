@@ -1,4 +1,5 @@
-import { EntityManager, EntityName, EntityRepository, QueryBuilder } from "@mikro-orm/postgresql";
+import type { EntityManager, EntityName, QueryBuilder } from "@mikro-orm/postgresql";
+import { EntityRepository } from "@mikro-orm/postgresql";
 
 export class CustomSQLBaseRepository<Entity extends object> extends EntityRepository<Entity> {
   constructor(protected readonly em: EntityManager, entityName: EntityName<Entity>) {

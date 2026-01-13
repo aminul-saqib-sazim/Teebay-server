@@ -1,4 +1,4 @@
-ARG NODE_VERSION=20.14
+ARG NODE_VERSION=22.21
 ARG BUN_VERSION=1.3.0
 
 # Base stage for installing dependencies

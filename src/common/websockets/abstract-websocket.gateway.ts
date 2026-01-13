@@ -1,9 +1,10 @@
-import { Injectable, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
+import type { OnModuleDestroy, OnModuleInit } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { WebSocketServer } from "@nestjs/websockets";
 
-import type { Server } from "socket.io";
+import { Server } from "socket.io";
 
-import { TSocket } from "./abstract-websocket.types";
+import type { TSocket } from "./abstract-websocket.types";
 
 @Injectable()
 export abstract class AbstractWebsocketGateway implements OnModuleInit, OnModuleDestroy {

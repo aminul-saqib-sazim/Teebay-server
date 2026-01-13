@@ -1,21 +1,22 @@
 import { Injectable } from "@nestjs/common";
 
-import { PDFCheckBox, PDFDocument, PDFForm, PDFRadioGroup, PDFTextField } from "@cantoo/pdf-lib";
+import type { PDFForm } from "@cantoo/pdf-lib";
+import { PDFCheckBox, PDFDocument, PDFRadioGroup, PDFTextField } from "@cantoo/pdf-lib";
 import dayjs from "dayjs";
 import { readFile } from "fs/promises";
 
 import { FileUploadsService } from "@/modules/file-uploads/file-uploads.service";
 
-import {
+import type {
   ICheckboxMapper,
   IDropdownMapper,
-  EPdfFieldType,
   TPdfFillMapperObject,
   IRadioButtonMapper,
   ITextFieldMapper,
   TDataDictionary,
   TPdfFillMapper,
 } from "./pdf-generation.types";
+import { EPdfFieldType } from "./pdf-generation.types";
 
 @Injectable()
 export class PdfGenerationService {
@@ -71,7 +72,7 @@ export class PdfGenerationService {
     );
   }
 
-  private loadPdfDocument(filePath: string): Promise<ArrayBuffer> {
+  private loadPdfDocument(filePath: string): Promise<Uint8Array> {
     return readFile(filePath);
   }
 

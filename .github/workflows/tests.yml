@@ -24,6 +24,8 @@ jobs:
       GOOGLE_CLIENT_SECRET: xxxxx
       WEB_CLIENT_BASE_URL: http://localhost:3000
       SEND_FROM_EMAIL: test@example.com
+      SESSION_EXPIRES_IN: 604800
+      SESSION_UPDATE_AGE: 86400
 
     steps:
       - name: Generate Dynamic Ports
@@ -86,6 +88,7 @@ jobs:
           echo "DATABASE_URL=postgresql://postgres:postgres@localhost:$DB_PORT/project_test_db?schema=public" >> $GITHUB_ENV
           echo "AWS_S3_ENDPOINT=http://localhost:$S3_PORT" >> $GITHUB_ENV
           echo "AWS_S3_BUCKET_URL=http://localhost:$S3_PORT" >> $GITHUB_ENV
+          echo "API_BASE_URL=http://localhost:$BE_PORT" >> $GITHUB_ENV
           echo "API_HEALTH_URL=http://localhost:$BE_PORT/api/v1/health" >> $GITHUB_ENV
 
       - name: Run database migrations

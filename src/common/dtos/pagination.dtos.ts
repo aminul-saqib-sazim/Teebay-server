@@ -1,7 +1,7 @@
 import { Type } from "class-transformer";
 import { IsOptional, IsInt, Min } from "class-validator";
 
-import { TPaginationMetadata } from "../types/pagination.types";
+import type { TPaginationMetadata } from "../types/pagination.types";
 
 export class PaginationArgsDto {
   @IsOptional()

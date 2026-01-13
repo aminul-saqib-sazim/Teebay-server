@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 
-import { TDataDictionary } from "./pdf-generation.types";
+import type { TDataDictionary } from "./pdf-generation.types";
 
 dayjs.extend(utc);
 

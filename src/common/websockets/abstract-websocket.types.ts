@@ -5,5 +5,5 @@ export type TSocketEventMap = {
 };
 
 export type TSocket = Socket<TSocketEventMap, TSocketEventMap, TSocketEventMap, unknown> & {
-  userId?: number;
+  userId?: string;
 };

@@ -1,11 +1,10 @@
 import { UnauthorizedException } from "@nestjs/common";
-import { JwtService } from "@nestjs/jwt";
 import { MessageBody, SubscribeMessage, WebSocketGateway } from "@nestjs/websockets";
 
 import { getCorsConfig } from "@/common/config/cors.config";
-import extractBearerAuthTokenFromHeaders from "@/common/middleware/bearer-token-validator.middleware";
 import { AbstractWebsocketGateway } from "@/common/websockets/abstract-websocket.gateway";
-import { TSocket } from "@/common/websockets/abstract-websocket.types";
+import type { TSocket } from "@/common/websockets/abstract-websocket.types";
+import { AuthService } from "@/modules/auth/auth.service";
 
 import { EGatewayIncomingEvent, EGatewayOutgoingEvent } from "./websocket-example.enum";
 
@@ -15,28 +14,42 @@ import { EGatewayIncomingEvent, EGatewayOutgoingEvent } from "./websocket-exampl
   transports: ["websocket"],
 })
 export class WebsocketExampleGateway extends AbstractWebsocketGateway {
-  constructor(private readonly jwtService: JwtService) {
+  constructor(private readonly authService: AuthService) {
     super();
   }
 
-  private userIdToSocketMap: Map<number, TSocket> = new Map();
+  private userIdToSocketMap: Map<string, TSocket> = new Map();
 
   onModuleInit(): void {
     super.onModuleInit();
 
-    this.server.use((socket: TSocket, next) => {
-      const headers = socket.handshake.auth;
-      const token = extractBearerAuthTokenFromHeaders(headers);
-
+    this.server.use(async (socket: TSocket, next) => {
       try {
-        const payload = this.jwtService.verify(token, {
-          secret: process.env.JWT_SECRET,
-          ignoreExpiration: false,
-          ignoreNotBefore: false,
+        const headers = new Headers();
+
+        // Get cookies from handshake headers or auth
+        const cookieHeader = socket.handshake.headers.cookie || socket.handshake.auth?.cookie;
+
+        if (cookieHeader) {
+          headers.set("cookie", cookieHeader);
+        }
+
+        // Copy other relevant headers
+        Object.entries(socket.handshake.headers).forEach(([key, value]) => {
+          if (value && key !== "cookie") {
+            headers.set(key, Array.isArray(value) ? value[0] : value);
+          }
         });
-        socket.userId = payload.sub;
+
+        const session = await this.authService.auth.api.getSession({ headers });
+
+        if (!session) {
+          return next(new UnauthorizedException());
+        }
+
+        socket.userId = session.user.id;
         return next();
-      } catch (err) {
+      } catch {
         return next(new UnauthorizedException());
       }
     });

@@ -1,4 +1,4 @@
-import { CorsOptions } from "@nestjs/common/interfaces/external/cors-options.interface";
+import type { CorsOptions } from "@nestjs/common/interfaces/external/cors-options.interface";
 
 const LOCAL_ALLOWED_URLS_WILDCARDS: string[] = ["http://localhost:*"];
 const DEVELOPMENT_ALLOWED_URLS_WILDCARDS: string[] = [];
@@ -27,10 +27,13 @@ const ALLOWED_HEADERS = [
 
 const ALLOWED_METHODS = ["GET", "HEAD", "PUT", "POST", "PATCH", "DELETE", "OPTIONS"];
 
+const EXPOSED_HEADERS = ["set-auth-token"];
+
 export function getCorsConfig(): CorsOptions {
   return {
     origin: getAllowedOrigins(),
     allowedHeaders: getAllowedHeaders(),
+    exposedHeaders: EXPOSED_HEADERS,
   };
 }
 

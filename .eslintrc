@@ -24,14 +24,7 @@
   "plugins": ["@typescript-eslint/eslint-plugin", "eslint-plugin-import-helpers"],
   "root": true,
   "rules": {
-    "@typescript-eslint/consistent-type-imports": [
-      "error",
-      {
-        "prefer": "type-imports",
-        "disallowTypeAnnotations": true,
-        "fixStyle": "separate-type-imports"
-      }
-    ],
+    "@typescript-eslint/consistent-type-imports": "off",
     "arrow-body-style": ["warn", "as-needed"],
     "eqeqeq": ["warn", "always"],
     "import-helpers/order-imports": [

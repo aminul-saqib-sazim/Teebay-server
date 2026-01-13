@@ -1,11 +1,55 @@
 import type { EntityManager } from "@mikro-orm/core";
 import { Seeder } from "@mikro-orm/seeder";
 
-import { CreateTestUser } from "./create-test-user";
-import { RolesAndPermissionsSeeder } from "./roles-and-permissions-seeder";
+import { hashPassword } from "better-auth/crypto";
+
+import { Account } from "@/common/entities/accounts.entity";
+import { Member } from "@/common/entities/members.entity";
+import { Organization } from "@/common/entities/organizations.entity";
+import { User } from "@/common/entities/users.entity";
+import { EUserRole } from "@/common/enums/roles.enums";
+import { EUserState } from "@/common/enums/users.enums";
 
 export class DevDatabaseSeeder extends Seeder {
-  run(em: EntityManager): Promise<void> {
-    return this.call(em, [RolesAndPermissionsSeeder, CreateTestUser]);
+  async run(em: EntityManager): Promise<void> {
+    const ownerEmail = process.env.ORGANIZATION_OWNER_EMAIL || "owner@sazim.io";
+    const ownerPassword = process.env.ORGANIZATION_OWNER_PASSWORD || "Password123";
+
+    const existingUser = await em.findOne(User, { email: ownerEmail });
+    if (existingUser) {
+      console.log(`Owner user ${ownerEmail} already exists, skipping seed.`);
+      return;
+    }
+
+    const hashedPassword = await hashPassword(ownerPassword);
+
+    const user = em.create(User, {
+      email: ownerEmail,
+      emailVerified: true,
+      firstName: "Organization",
+      lastName: "Owner",
+      name: "Organization Owner",
+      state: EUserState.ACTIVE,
+    });
+
+    const account = em.create(Account, {
+      user,
+      accountId: ownerEmail,
+      providerId: "credential",
+      password: hashedPassword,
+    });
+
+    const organization = em.create(Organization, {
+      name: "Default Organization",
+      slug: "default-organization",
+    });
+
+    const membership = em.create(Member, {
+      user,
+      organization,
+      role: EUserRole.OWNER,
+    });
+
+    await em.persistAndFlush([user, account, organization, membership]);
   }
 }

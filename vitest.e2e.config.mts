@@ -16,9 +16,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      // @ts-expect-error - This is a workaround for a TypeScript bug
       "@/test/": new URL("./test/", import.meta.url).pathname,
-      // @ts-expect-error - This is a workaround for a TypeScript bug
       "@/": new URL("./src/", import.meta.url).pathname,
     },
   },

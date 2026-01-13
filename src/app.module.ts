@@ -1,5 +1,7 @@
-import { Logger, MiddlewareConsumer, Module } from "@nestjs/common";
+import type { MiddlewareConsumer } from "@nestjs/common";
+import { Logger, Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
+import { APP_GUARD } from "@nestjs/core";
 
 import { MikroOrmModule } from "@mikro-orm/nestjs";
 
@@ -7,7 +9,9 @@ import { OpenTelemetryModule } from "@metinseylan/nestjs-opentelemetry";
 
 import { AuditLoggingModule } from "./common/audit-logging/audit-logging.module";
 import { AuditLoggingSubscriber } from "./common/audit-logging/audit-logging.subscriber";
+import { SessionGuard } from "./common/guards/session.guard";
 import { AppLoggerMiddleware } from "./common/middleware/request-logger.middleware";
+import { SkipBodyParsingForAuthMiddleware } from "./common/middleware/skip-body-parsing-for-auth.middleware";
 import { validate } from "./common/validators/env.validator";
 import ormConfig from "./db/db.config";
 import { AuthModule } from "./modules/auth/auth.module";
@@ -15,13 +19,12 @@ import { DocumentSigningModule } from "./modules/document-signing/document-signi
 import { EmailsModule } from "./modules/emails/emails.module";
 import { FileUploadsModule } from "./modules/file-uploads/file-uploads.module";
 import { HealthModule } from "./modules/health/health.module";
+import { MembersModule } from "./modules/members/members.module";
 import { PdfGenerationModule } from "./modules/pdf-generation/pdf-generation.module";
+import { PermissionsModule } from "./modules/permissions/permissions.module";
 import { RolesModule } from "./modules/roles/roles.module";
-import { UserProfilesModule } from "./modules/user-profiles/user-profiles.module";
 import { UsersModule } from "./modules/users/users.module";
-import { VerificationRequestsModule } from "./modules/verification-requests/verification-requests.module";
 import { WebsocketExampleModule } from "./modules/websocket-example/websocket-example.module";
-import { PermissionsModule } from "./permissions/permissions.module";
 
 @Module({
   imports: [
@@ -48,23 +51,29 @@ import { PermissionsModule } from "./permissions/permissions.module";
 
     AuditLoggingModule,
 
-    UsersModule,
     AuthModule,
+    UsersModule,
+    MembersModule,
     RolesModule,
+    PermissionsModule,
     FileUploadsModule,
     WebsocketExampleModule,
-    UserProfilesModule,
     HealthModule,
     PdfGenerationModule,
     DocumentSigningModule,
-    VerificationRequestsModule,
-    PermissionsModule,
   ],
   controllers: [],
-  providers: [Logger],
+  providers: [
+    Logger,
+    {
+      provide: APP_GUARD,
+      useClass: SessionGuard,
+    },
+  ],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(SkipBodyParsingForAuthMiddleware).forRoutes("*");
     consumer.apply(AppLoggerMiddleware).forRoutes("*");
   }
 }

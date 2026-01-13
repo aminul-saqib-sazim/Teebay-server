@@ -1,17 +1,17 @@
-import { Type } from "@nestjs/common";
+import type { Type } from "@nestjs/common";
+import type { MappedType } from "@nestjs/mapped-types";
 import {
-  MappedType,
   PartialType,
   applyIsOptionalDecorator,
   inheritPropertyInitializers,
   inheritTransformationMetadata,
   inheritValidationMetadata,
 } from "@nestjs/mapped-types";
-import { RemoveFieldsWithType } from "@nestjs/mapped-types/dist/types/remove-fields-with-type.type";
+import type { RemoveFieldsWithType } from "@nestjs/mapped-types/dist/types/remove-fields-with-type.type";
 
 import { Type as CTType } from "class-transformer";
 
-import { DeepPartial } from "../../types/deep-partial.type";
+import type { DeepPartial } from "../../types/deep-partial.type";
 
 export function DeepPartialType<T>(classRef: Type<T>) {
   abstract class DeepPartialClassType {

@@ -1,7 +1,7 @@
 import { plainToInstance } from "class-transformer";
 import { IsIn, IsNumber, IsOptional, IsPositive, IsString, validateSync } from "class-validator";
 
-import { IEnvironmentVariables } from "../interfaces/environment-variables.interface";
+import type { IEnvironmentVariables } from "../interfaces/environment-variables.interface";
 
 class EnvironmentVariables implements IEnvironmentVariables {
   @IsString()
@@ -20,16 +20,13 @@ class EnvironmentVariables implements IEnvironmentVariables {
   BE_WS_PORT!: number;
 
   @IsString()
+  API_BASE_URL!: string;
+
+  @IsString()
   API_HEALTH_URL!: string;
 
   @IsString()
   DATABASE_URL!: string;
-
-  @IsString()
-  JWT_SECRET!: string;
-
-  @IsString()
-  JWT_TOKEN_LIFETIME!: string;
 
   @IsString()
   AWS_S3_REGION!: string;
@@ -70,6 +67,22 @@ class EnvironmentVariables implements IEnvironmentVariables {
 
   @IsString()
   SEND_FROM_EMAIL!: string;
+
+  @IsOptional()
+  @IsString()
+  ORGANIZATION_OWNER_EMAIL?: string;
+
+  @IsOptional()
+  @IsString()
+  ORGANIZATION_OWNER_PASSWORD?: string;
+
+  @IsNumber()
+  @IsPositive()
+  SESSION_EXPIRES_IN!: number;
+
+  @IsNumber()
+  @IsPositive()
+  SESSION_UPDATE_AGE!: number;
 }
 
 export function validate(config: Record<string, unknown>) {

@@ -1,33 +1,34 @@
-import { INestApplication } from "@nestjs/common";
+import type { INestApplication } from "@nestjs/common";
 
-import { EntityManager, IDatabaseDriver, Connection, MikroORM } from "@mikro-orm/core";
+import type { EntityManager, IDatabaseDriver, Connection, MikroORM } from "@mikro-orm/core";
 
-import { faker } from "@faker-js/faker";
-import { io, Socket } from "socket.io-client";
-import { DoneCallback } from "vitest";
+import type { Socket } from "socket.io-client";
+import { io } from "socket.io-client";
+import type { DoneCallback } from "vitest";
 
 import {
   EGatewayIncomingEvent,
   EGatewayOutgoingEvent,
 } from "@/modules/websocket-example/websocket-example.enum";
 
-import { seedPermissionsData } from "../auth/auth.helpers";
 import { bootstrapTestServer } from "../utils/bootstrap";
 import { truncateTables } from "../utils/db";
-import { getAccessToken } from "../utils/helpers/access-token.helpers";
-import { createUserInDb } from "../utils/helpers/create-user-in-db.helpers";
-import { THttpServer } from "../utils/types";
+import { getBearerToken } from "../utils/helpers/bearer-token.helpers";
+import {
+  createUserInDb,
+  MOCK_USER_EMAIL,
+  MOCK_USER_PASSWORD,
+} from "../utils/helpers/create-user-in-db.helpers";
+import type { THttpServer } from "../utils/types";
 
-describe("Websocket Example Gateway (E2E", () => {
+describe("Websocket Example Gateway (E2E)", () => {
   let app: INestApplication;
   let dbService: EntityManager<IDatabaseDriver<Connection>>;
   let httpServer: THttpServer;
   let orm: MikroORM<IDatabaseDriver<Connection>>;
   let socket: Socket;
 
-  const testUserEmail = faker.internet.email();
-  const testUserPassword = faker.internet.password();
-  let token: string;
+  let bearerToken: string;
 
   const defaultSocketConnectConfig = {
     autoConnect: false,
@@ -43,16 +44,13 @@ describe("Websocket Example Gateway (E2E", () => {
     dbService = dbServiceInstance;
     httpServer = httpServerInstance;
     orm = ormInstance;
-    await seedPermissionsData(dbService);
 
-    await createUserInDb(dbService, {
-      email: testUserEmail,
-      password: testUserPassword,
-    });
+    await truncateTables(dbService);
+    dbService.clear();
 
-    token = await getAccessToken(httpServer, testUserEmail, testUserPassword);
+    await createUserInDb(dbService);
 
-    await appInstance.listen(5000);
+    bearerToken = await getBearerToken(httpServer, MOCK_USER_EMAIL, MOCK_USER_PASSWORD);
   });
 
   afterAll(async () => {
@@ -74,10 +72,10 @@ describe("Websocket Example Gateway (E2E", () => {
       socket = io(defaultSocketUrl, {
         ...defaultSocketConnectConfig,
         auth: {
-          authorization: `Bearer ${token.slice(1)}`,
+          token: "invalid-token",
         },
         extraHeaders: {
-          authorization: `Bearer ${token.slice(1)}`,
+          authorization: "Bearer invalid-token",
         },
       });
 
@@ -95,10 +93,10 @@ describe("Websocket Example Gateway (E2E", () => {
       socket = io(defaultSocketUrl, {
         ...defaultSocketConnectConfig,
         auth: {
-          authorization: `Bearer ${token}`,
+          token: bearerToken,
         },
         extraHeaders: {
-          authorization: `Bearer ${token}`,
+          authorization: `Bearer ${bearerToken}`,
         },
       });
 
@@ -116,10 +114,10 @@ describe("Websocket Example Gateway (E2E", () => {
       socket = io(defaultSocketUrl, {
         ...defaultSocketConnectConfig,
         auth: {
-          authorization: `Bearer ${token}`,
+          token: bearerToken,
         },
         extraHeaders: {
-          authorization: `Bearer ${token}`,
+          authorization: `Bearer ${bearerToken}`,
         },
       });
 

@@ -1,108 +1,57 @@
-import { Injectable } from "@nestjs/common";
+import type { FilterQuery } from "@mikro-orm/core";
 
-import { EntityManager, QueryOrder, wrap } from "@mikro-orm/core";
-
-import { Role } from "@/common/entities/roles.entity";
-import { UserOAuth } from "@/common/entities/user-oauths.entity";
-import { UserProfile } from "@/common/entities/user-profiles.entity";
-import { EOAuthProvider } from "@/common/enums/shared.enums";
+import { User } from "@/common/entities/users.entity";
 import { CustomSQLBaseRepository } from "@/common/repository/custom-sql-base.repository";
 
-import { User } from "../../common/entities/users.entity";
-import { ISignInWithGoogleParams } from "../auth/auth.interfaces";
-import {
-  UpdateUserAsSuperuserDto,
-  RegisterUserDto,
-  SelfRegisterUserDto,
-  UpdateUserDto,
-  SuperuserFindAllUsersParams,
-} from "./users.dtos";
+import type { IFindUsersOptions } from "./users.interface";
 
-@Injectable()
 export class UsersRepository extends CustomSQLBaseRepository<User> {
-  createOne(registerUserDto: RegisterUserDto | SelfRegisterUserDto, role: Role) {
-    const {
-      email,
-      password,
-      userProfile: { firstName, lastName },
-    } = registerUserDto;
-
-    const user = new User(email, password);
-    const userProfile = new UserProfile(firstName, lastName);
-
-    userProfile.role = role;
-    user.userProfile = userProfile;
-    userProfile.user = user;
-
-    this.em.persist([user, userProfile]);
-
-    return user;
+  async findById(id: string): Promise<User | null> {
+    return this.findOne({ id });
   }
 
-  update(user: User, updateUserDto: UpdateUserDto) {
-    this.em.assign(user, updateUserDto);
-
-    this.em.persist(user);
-
-    return user;
+  async findByEmail(email: string): Promise<User | null> {
+    return this.findOne({ email });
   }
 
-  updateAsSuperuser(
-    user: User,
-    updateUserAsSuperuserDto: UpdateUserAsSuperuserDto,
-    updatedRole?: Role,
-  ) {
-    const { roleId: _, ...rest } = updateUserAsSuperuserDto;
+  async findAllPaginated(options: IFindUsersOptions): Promise<{ users: User[]; total: number }> {
+    const { page, limit, search, state, organizationId } = options;
+    const offset = (page - 1) * limit;
 
-    this.em.assign(user, rest);
+    const where: FilterQuery<User> = {};
 
-    if (updatedRole) {
-      user.userProfile.role = updatedRole;
+    if (state) {
+      where.state = state;
     }
 
-    this.em.persist(user);
+    if (search) {
+      where.$or = [
+        { email: { $like: `%${search}%` } },
+        { firstName: { $like: `%${search}%` } },
+        { lastName: { $like: `%${search}%` } },
+        { name: { $like: `%${search}%` } },
+      ];
+    }
 
+    if (organizationId) {
+      where.memberships = { organization: { id: organizationId } };
+    }
+
+    const [users, total] = await this.em.findAndCount(User, where, {
+      limit,
+      offset,
+      orderBy: { createdAt: "DESC" },
+    });
+
+    return { users, total };
+  }
+
+  async update(id: string, data: Partial<User>): Promise<User | null> {
+    const user = await this.findById(id);
+    if (!user) {
+      return null;
+    }
+    this.em.assign(user, data);
     return user;
-  }
-
-  findAllPaginated(params: SuperuserFindAllUsersParams, currentUserId: number) {
-    const { page, limit, state } = params;
-
-    const qb = this.createQueryBuilder("u")
-      .select("*")
-      .leftJoinAndSelect("u.userProfile", "up")
-      .leftJoinAndSelect("up.role", "r")
-      .where({
-        state,
-        id: {
-          $ne: currentUserId,
-        },
-      })
-      .orderBy({
-        createdAt: QueryOrder.DESC,
-      });
-
-    return this.retrievePaginatedRecordsByLimitAndOffset({ qb, page, limit });
-  }
-
-  createWithOAuthProvider(
-    input: ISignInWithGoogleParams,
-    provider: EOAuthProvider,
-    role: Role,
-    em?: EntityManager,
-  ) {
-    const entityManager = em ?? this.em;
-
-    const newUser = new User(input.user.email);
-
-    const newUserProfile = new UserProfile(input.user.firstName, input.user.lastName);
-    wrap(newUserProfile).assign({ user: newUser, role });
-
-    const userOAuth = new UserOAuth(input.user.sub, provider, input.user.isVerified);
-    wrap(userOAuth).assign({ user: newUser });
-
-    entityManager.persist([newUser, newUserProfile, userOAuth]);
-
-    return newUser;
   }
 }

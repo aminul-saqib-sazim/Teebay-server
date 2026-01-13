@@ -1,4 +1,4 @@
-import { TPaginationMetadata } from "../common/types/pagination.types";
+import type { TPaginationMetadata } from "../common/types/pagination.types";
 
 export function computePaginationMetadata({
   page,

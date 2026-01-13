@@ -1,7 +1,8 @@
 import { BadRequestException } from "@nestjs/common";
-import { ArgumentMetadata } from "@nestjs/common/interfaces";
+import type { ArgumentMetadata } from "@nestjs/common/interfaces";
 
-import { ParseEnumArrayOptions, ParseEnumArrayPipe } from "@/common/pipes/parse-enum-array";
+import type { ParseEnumArrayOptions } from "@/common/pipes/parse-enum-array";
+import { ParseEnumArrayPipe } from "@/common/pipes/parse-enum-array";
 
 describe("ParseEnumArrayPipe", () => {
   enum ESomeEnum {

@@ -2,7 +2,7 @@ import { InternalServerErrorException } from "@nestjs/common";
 
 import { serialize } from "@mikro-orm/core";
 
-import { TSerializationOptions } from "./abstract-base-serializer.types";
+import type { TSerializationOptions } from "./abstract-base-serializer.types";
 
 export class AbstractBaseSerializer {
   protected serializeOneOptions: TSerializationOptions = {

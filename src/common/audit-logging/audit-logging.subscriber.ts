@@ -1,12 +1,13 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
-import { ChangeSet, ChangeSetType, EventSubscriber, FlushEventArgs } from "@mikro-orm/core";
+import type { ChangeSet, EventSubscriber, FlushEventArgs } from "@mikro-orm/core";
+import { ChangeSetType } from "@mikro-orm/core";
 
 import { EAuditAction } from "@/common/enums/audit.enums";
 
 import { AuditLog } from "../entities/audit-logs.entity";
-import { User } from "../entities/users.entity";
+import type { User } from "../entities/users.entity";
 import { CHANGE_SET_TYPES_TO_PROCESS, EXCLUDED_ENTITIES } from "./audit-logging.constants";
 
 @Injectable()

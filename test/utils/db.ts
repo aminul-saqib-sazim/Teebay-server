@@ -1,4 +1,4 @@
-import { EntityManager, IDatabaseDriver, Connection } from "@mikro-orm/core";
+import type { EntityManager, IDatabaseDriver, Connection } from "@mikro-orm/core";
 
 /**
  * @description

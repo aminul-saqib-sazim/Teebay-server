@@ -1,8 +1,8 @@
 import { NotFoundException } from "@nestjs/common";
 import { Logger } from "@nestjs/common";
 
-import { Dictionary, ReflectMetadataProvider } from "@mikro-orm/core";
-import { IPrimaryKeyValue } from "@mikro-orm/core/typings";
+import type { Dictionary, Primary } from "@mikro-orm/core";
+import { ReflectMetadataProvider } from "@mikro-orm/core";
 import { Migrator, TSMigrationGenerator } from "@mikro-orm/migrations";
 import { defineConfig } from "@mikro-orm/postgresql";
 import { SeedManager } from "@mikro-orm/seeder";
@@ -24,7 +24,7 @@ const ormConfig = defineConfig({
 
   validate: true,
   strict: true,
-  debug: true,
+  debug: process.env.STAGE_ENV === "local",
 
   driverOptions: {
     connection: {
@@ -81,11 +81,11 @@ const ormConfig = defineConfig({
     fileName: (className: string) => className,
   },
 
-  findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKeyValue) => {
+  findOneOrFailHandler: (entityName: string, where: Dictionary | Primary<unknown>) => {
     Logger.debug(`Entity ${entityName} not found with where ${JSON.stringify(where)}`);
     return new NotFoundException();
   },
-  findExactlyOneOrFailHandler(entityName: string, where: Dictionary | IPrimaryKeyValue) {
+  findExactlyOneOrFailHandler(entityName: string, where: Dictionary | Primary<unknown>) {
     Logger.debug(`Entity ${entityName} not found with where ${JSON.stringify(where)}`);
     return new NotFoundException();
   },

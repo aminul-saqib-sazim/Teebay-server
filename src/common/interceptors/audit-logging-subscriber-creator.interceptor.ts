@@ -1,9 +1,10 @@
-import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from "@nestjs/common";
+import type { CallHandler, ExecutionContext, NestInterceptor } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 
-import { Observable } from "rxjs";
+import type { Observable } from "rxjs";
 
 import { AuditLoggingSubscriber } from "../audit-logging/audit-logging.subscriber";
-import { User } from "../entities/users.entity";
+import type { User } from "../entities/users.entity";
 
 @Injectable()
 export class AuditLoggingSubscriberCreatorInterceptor implements NestInterceptor {

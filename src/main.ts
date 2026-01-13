@@ -1,6 +1,8 @@
 import { Logger, ValidationPipe, VersioningType } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
-import { SwaggerModule, DocumentBuilder, SwaggerDocumentOptions } from "@nestjs/swagger";
+import type { NestExpressApplication } from "@nestjs/platform-express";
+import type { SwaggerDocumentOptions } from "@nestjs/swagger";
+import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 
 import helmet from "helmet";
 import { WinstonModule } from "nest-winston";
@@ -17,8 +19,9 @@ async function bootstrap() {
     transports: getWinstonLoggerTransports(),
   });
 
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger,
+    bodyParser: false,
   });
   const loggerInstance = app.get(Logger);
   const auditLoggingSubscriber = app.get(AuditLoggingSubscriber);
