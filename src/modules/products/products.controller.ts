@@ -1,10 +1,12 @@
 import {
   Controller,
+  Get,
   Post,
   Body,
   Patch,
   Param,
   Delete,
+  Query,
   UseGuards,
   Req,
 } from "@nestjs/common";
@@ -43,5 +45,10 @@ export class ProductsController {
   @UseGuards(PermissionsGuard)
   remove(@Req() req: Request, @Param("id") id: string) {
     return this.productsService.remove(id, req.user as User);
+  }
+
+  @Get()
+  findAll(@Query() query: IGetProductsDto) {
+    return this.productsService.findAll(query);
   }
 }
