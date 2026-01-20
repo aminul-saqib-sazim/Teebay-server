@@ -1,8 +1,8 @@
-import { Injectable } from "@nestjs/common";
+import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 
 import { User } from "@/common/entities/users.entity";
 
-import { CreateProductDto } from "./products.dtos";
+import { CreateProductDto, UpdateProductDto } from "./products.dtos";
 import { ProductsRepository } from "./products.repository";
 
 @Injectable()
@@ -19,5 +19,31 @@ export class ProductsService {
     });
     await em.persistAndFlush(product);
     return product;
+  }
+
+  async update(id: string, user: User, updateProductDto: UpdateProductDto) {
+    const product = await this.findOne(id);
+
+    if (user.id !== product.owner.id && !this.isAdmin(user)) {
+      throw new ForbiddenException("You are not allowed to update this product");
+    }
+
+    this.productsRepository.assign(product, updateProductDto);
+    await this.productsRepository.getEntityManager().flush();
+    return product;
+  }
+
+  async findOne(id: string) {
+    const product = await this.productsRepository.findOne({ id }, { populate: ["owner"] });
+    if (!product) {
+      throw new NotFoundException("Product not found");
+    }
+    return product;
+  }
+
+  private isAdmin(user: User): boolean {
+    console.log(user);
+    // TODO: will check user role later
+    return false;
   }
 }
