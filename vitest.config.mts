@@ -1,5 +1,6 @@
 import swc from "unplugin-swc";
 import { defineConfig } from "vitest/config";
+import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
   test: {
@@ -11,11 +12,5 @@ export default defineConfig({
       BASE_URL: process.env["BASE_URL"] ?? "/",
     },
   },
-  resolve: {
-    alias: {
-      "@/test/": new URL("./test/", import.meta.url).pathname,
-      "@/": new URL("./src/", import.meta.url).pathname,
-    },
-  },
-  plugins: [swc.vite()],
+  plugins: [swc.vite(), tsconfigPaths()],
 });
