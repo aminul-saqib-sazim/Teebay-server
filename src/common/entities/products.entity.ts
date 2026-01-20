@@ -8,24 +8,24 @@ import { User } from "./users.entity";
 
 @Entity({ tableName: "products", repository: () => ProductsRepository })
 export class Product extends CustomBaseEntity {
-    @PrimaryKey({ type: "uuid", defaultRaw: "gen_random_uuid()" })
-    id!: string;
+  @PrimaryKey({ type: "uuid", defaultRaw: "gen_random_uuid()" })
+  id!: string;
 
-    @Property()
-    title!: string;
+  @Property()
+  title!: string;
 
-    @Property({ type: "text" })
-    description!: string;
+  @Property({ type: "text" })
+  description!: string;
 
-    @Property({ type: "decimal", precision: 10, scale: 2 })
-    price!: number;
+  @Property({ type: "decimal", precision: 10, scale: 2 })
+  price!: number;
 
-    @Property()
-    quantity!: number;
+  @Property()
+  quantity!: number;
 
-    @Enum({ items: () => EProductCategory, array: true })
-    categories!: EProductCategory[];
+  @Enum({ items: () => EProductCategory, array: true })
+  categories!: EProductCategory[];
 
-    @ManyToOne(() => User)
-    owner!: User;
+  @ManyToOne(() => User)
+  owner!: User;
 }
