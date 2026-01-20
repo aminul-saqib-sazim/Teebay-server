@@ -82,7 +82,7 @@ jobs:
           docker exec project_test_db_${{ github.run_id }} \
             psql -U postgres -d project_test_db \
             -c 'CREATE EXTENSION IF NOT EXISTS pg_trgm;'
-            
+
       - name: Set Dynamic Environment Variables
         run: |
           echo "DATABASE_URL=postgresql://postgres:postgres@localhost:$DB_PORT/project_test_db?schema=public" >> $GITHUB_ENV

@@ -22,6 +22,7 @@ import { HealthModule } from "./modules/health/health.module";
 import { MembersModule } from "./modules/members/members.module";
 import { PdfGenerationModule } from "./modules/pdf-generation/pdf-generation.module";
 import { PermissionsModule } from "./modules/permissions/permissions.module";
+import { ProductsModule } from "./modules/products/products.module";
 import { RolesModule } from "./modules/roles/roles.module";
 import { UsersModule } from "./modules/users/users.module";
 import { WebsocketExampleModule } from "./modules/websocket-example/websocket-example.module";
@@ -61,6 +62,7 @@ import { WebsocketExampleModule } from "./modules/websocket-example/websocket-ex
     HealthModule,
     PdfGenerationModule,
     DocumentSigningModule,
+    ProductsModule,
   ],
   controllers: [],
   providers: [
