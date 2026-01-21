@@ -6,5 +6,5 @@ import { OrdersService } from "./orders.service";
 @ApiTags("Orders")
 @Controller("orders")
 export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(private readonly ordersService: OrdersService) { }
 }
