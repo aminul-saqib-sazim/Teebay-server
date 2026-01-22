@@ -11,7 +11,7 @@ import type { Request } from "express";
 import { Product } from "@/common/entities/products.entity";
 import { User } from "@/common/entities/users.entity";
 
-import { CreateProductDto } from "./dto/create-product.dto";
+import { CreateProductDto } from "./products.dtos";
 import { ProductsService } from "./products.service";
 
 @ApiTags("Products")
