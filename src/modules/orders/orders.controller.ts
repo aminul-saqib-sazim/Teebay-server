@@ -13,7 +13,7 @@ import { OrdersService } from "./orders.service";
 @Controller("orders")
 @UseInterceptors(ResponseTransformInterceptor)
 export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) { }
+  constructor(private readonly ordersService: OrdersService) {}
 
   @Get("my-orders")
   @ApiBearerAuth()

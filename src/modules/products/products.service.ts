@@ -55,8 +55,15 @@ export class ProductsService {
   async remove(id: string, user: User) {
     const product = await this.findOne(id);
 
-    if (user.id !== product.owner.id && !this.isAdmin(user)) {
+    if (user.id !== product.owner.id) {
       throw new ForbiddenException("You are not allowed to delete this product");
+    }
+
+    const existingOrder = await this.ordersRepository.findOne({ product: { id: product.id } });
+    if (existingOrder) {
+      throw new BadRequestException(
+        "This product cannot be deleted because it is part of an order.",
+      );
     }
 
     await this.productsRepository.getEntityManager().removeAndFlush(product);
@@ -67,15 +74,15 @@ export class ProductsService {
     return this.productsRepository.findAllPaginated(options);
   }
 
-  async buyProduct(id: string, user: User) {
+  async buyProduct(id: string, user: User, quantity: number) {
     const product = await this.findOne(id);
 
     if (user.id === product.owner.id) {
       throw new BadRequestException("You cannot buy your own product");
     }
 
-    if (product.quantity < 1) {
-      throw new BadRequestException("Product out of stock");
+    if (product.quantity < quantity) {
+      throw new BadRequestException("Not enough stock available");
     }
 
     const em = this.productsRepository.getEntityManager();
@@ -85,23 +92,27 @@ export class ProductsService {
       product: em.getReference(Product, product.id),
       buyer: em.getReference(User, user.id),
       type: EOrderType.BUY,
-      status: EOrderStatus.COMPLETED, // For now it's completed
+      status: EOrderStatus.COMPLETED, // For now guess it's completed
       price: product.price,
-      quantity: 1,
+      quantity,
     });
 
-    product.quantity -= 1;
+    product.quantity -= quantity;
 
     await em.persistAndFlush([order, product]);
 
     return { success: true, message: "Product purchased successfully", orderId: order.id };
   }
 
-  async rentProduct(id: string, user: User) {
+  async rentProduct(id: string, user: User, quantity: number) {
     const product = await this.findOne(id);
 
     if (user.id === product.owner.id) {
       throw new BadRequestException("You cannot rent your own product");
+    }
+
+    if (product.quantity < quantity) {
+      throw new BadRequestException("Not enough stock available");
     }
 
     const em = this.productsRepository.getEntityManager();
@@ -113,20 +124,14 @@ export class ProductsService {
       type: EOrderType.RENT,
       status: EOrderStatus.COMPLETED,
       price: product.price,
-      quantity: 1,
+      quantity,
       rentStartDate: new Date(),
     });
 
-    product.quantity -= 1;
+    product.quantity -= quantity;
 
     await em.persistAndFlush([order, product]);
 
     return { success: true, message: "Product rented successfully", orderId: order.id };
-  }
-
-  private isAdmin(user: User): boolean {
-    console.log(user);
-    // TODO: will check user role later
-    return false;
   }
 }

@@ -49,3 +49,9 @@ export class IGetProductsDto {
   @Type(() => String)
   category?: EProductCategory;
 }
+export class OrderProductDto {
+  @IsNumber()
+  @Min(1)
+  @Type(() => Number)
+  quantity: number = 1;
+}
