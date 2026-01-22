@@ -7,7 +7,7 @@ import { ProductsRepository } from "./products.repository";
 
 @Injectable()
 export class ProductsService {
-  constructor(private readonly productsRepository: ProductsRepository) {}
+  constructor(private readonly productsRepository: ProductsRepository) { }
 
   async create(user: User, createProductDto: CreateProductDto) {
     const em = this.productsRepository.getEntityManager();
