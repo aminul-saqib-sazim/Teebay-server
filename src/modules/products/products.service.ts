@@ -7,7 +7,7 @@ import { ProductsRepository } from "./products.repository";
 
 @Injectable()
 export class ProductsService {
-  constructor(private readonly productsRepository: ProductsRepository) { }
+  constructor(private readonly productsRepository: ProductsRepository) {}
 
   async create(user: User, createProductDto: CreateProductDto) {
     const em = this.productsRepository.getEntityManager();
@@ -24,7 +24,7 @@ export class ProductsService {
   async update(id: string, user: User, updateProductDto: UpdateProductDto) {
     const product = await this.findOne(id);
 
-    if (user.id !== product.owner.id && !this.isAdmin(user)) {
+    if (user.id !== product.owner.id) {
       throw new ForbiddenException("You are not allowed to update this product");
     }
 
@@ -39,11 +39,5 @@ export class ProductsService {
       throw new NotFoundException("Product not found");
     }
     return product;
-  }
-
-  private isAdmin(user: User): boolean {
-    console.log(user);
-    // TODO: will check user role later
-    return false;
   }
 }
