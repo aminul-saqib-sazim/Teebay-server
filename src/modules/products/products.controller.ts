@@ -19,7 +19,7 @@ import { User } from "@/common/entities/users.entity";
 import { PermissionsGuard } from "@/common/guards/permissions.guard";
 
 import { EPermission } from "../permissions/permissions.enums";
-import { CreateProductDto, UpdateProductDto } from "./products.dtos";
+import { CreateProductDto, IGetProductsDto, UpdateProductDto } from "./products.dtos";
 import { ProductsService } from "./products.service";
 
 @ApiTags("Products")

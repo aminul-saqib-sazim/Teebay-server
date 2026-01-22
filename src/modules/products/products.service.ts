@@ -3,7 +3,7 @@ import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/commo
 import { Product } from "@/common/entities/products.entity";
 import { User } from "@/common/entities/users.entity";
 
-import { CreateProductDto, UpdateProductDto } from "./products.dtos";
+import { CreateProductDto, IGetProductsDto, UpdateProductDto } from "./products.dtos";
 import { ProductsRepository } from "./products.repository";
 
 @Injectable()

@@ -3,7 +3,7 @@ import type { FilterQuery } from "@mikro-orm/core";
 import { Product } from "@/common/entities/products.entity";
 import { CustomSQLBaseRepository } from "@/common/repository/custom-sql-base.repository";
 
-import { IGetProductsDto } from "./dto/get-products.dto";
+import { IGetProductsDto } from "./products.dtos";
 
 export class ProductsRepository extends CustomSQLBaseRepository<Product> {
   async findAllPaginated(
