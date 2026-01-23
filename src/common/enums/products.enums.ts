@@ -6,3 +6,7 @@ export enum EProductCategory {
   OUTDOOR = "OUTDOOR",
   TOYS = "TOYS",
 }
+export enum ERentOption {
+  HOURLY = "HOURLY",
+  DAILY = "DAILY",
+}

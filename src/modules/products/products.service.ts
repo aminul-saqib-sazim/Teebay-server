@@ -18,7 +18,7 @@ export class ProductsService {
   constructor(
     private readonly productsRepository: ProductsRepository,
     private readonly ordersRepository: OrdersRepository,
-  ) {}
+  ) { }
 
   async create(user: User, createProductDto: CreateProductDto) {
     const em = this.productsRepository.getEntityManager();
@@ -123,7 +123,7 @@ export class ProductsService {
       buyer: em.getReference(User, user.id),
       type: EOrderType.RENT,
       status: EOrderStatus.COMPLETED,
-      price: product.price,
+      price: product.rentalPrice,
       quantity,
       rentStartDate: new Date(),
     });

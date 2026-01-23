@@ -3,7 +3,7 @@ import { PartialType } from "@nestjs/mapped-types";
 import { Type } from "class-transformer";
 import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from "class-validator";
 
-import { EProductCategory } from "@/common/enums/products.enums";
+import { EProductCategory, ERentOption } from "@/common/enums/products.enums";
 
 export class CreateProductDto {
   @IsString()
@@ -20,6 +20,14 @@ export class CreateProductDto {
 
   @IsNumber()
   @IsNotEmpty()
+  rentalPrice!: number;
+
+  @IsEnum(ERentOption)
+  @IsOptional()
+  rentOption?: ERentOption;
+
+  @IsNumber()
+  @IsNotEmpty()
   quantity!: number;
 
   @IsArray()
@@ -27,7 +35,7 @@ export class CreateProductDto {
   categories!: EProductCategory[];
 }
 
-export class UpdateProductDto extends PartialType(CreateProductDto) {}
+export class UpdateProductDto extends PartialType(CreateProductDto) { }
 
 export class IGetProductsDto {
   @IsNumber()
