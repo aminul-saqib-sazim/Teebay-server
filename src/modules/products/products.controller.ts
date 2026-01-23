@@ -31,7 +31,7 @@ import { ProductsService } from "./products.service";
 @Controller("products")
 @UseInterceptors(ResponseTransformInterceptor)
 export class ProductsController {
-  constructor(private readonly productsService: ProductsService) { }
+  constructor(private readonly productsService: ProductsService) {}
 
   @Post()
   @Permissions({ product: [EPermission.CREATE] })

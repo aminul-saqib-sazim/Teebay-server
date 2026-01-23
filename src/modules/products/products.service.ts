@@ -10,7 +10,12 @@ import { User } from "@/common/entities/users.entity";
 import { EOrderStatus, EOrderType } from "@/common/enums/orders.enums";
 import { OrdersRepository } from "@/modules/orders/orders.repository";
 
-import { CreateProductDto, IGetProductsDto, OrderProductDto, UpdateProductDto } from "./products.dtos";
+import {
+  CreateProductDto,
+  IGetProductsDto,
+  OrderProductDto,
+  UpdateProductDto,
+} from "./products.dtos";
 import { ProductsRepository } from "./products.repository";
 
 @Injectable()
@@ -18,7 +23,7 @@ export class ProductsService {
   constructor(
     private readonly productsRepository: ProductsRepository,
     private readonly ordersRepository: OrdersRepository,
-  ) { }
+  ) {}
 
   async create(user: User, createProductDto: CreateProductDto) {
     const em = this.productsRepository.getEntityManager();
@@ -116,6 +121,29 @@ export class ProductsService {
       throw new BadRequestException("Not enough stock available");
     }
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const start = rentStartDate ? new Date(rentStartDate) : today;
+    const end = rentEndDate ? new Date(rentEndDate) : undefined;
+
+    if (start < today) {
+      throw new BadRequestException("Rent start date cannot be in the past");
+    }
+
+    if (end && end < start) {
+      throw new BadRequestException("Rent end date must be on or after start date");
+    }
+
+    // Check for overlapping rentals
+    const overlapping = await this.ordersRepository.findOverlappingRentals(
+      product.id,
+      start,
+      end || new Date(start.getTime() + 24 * 60 * 60 * 1000),
+    );
+    if (overlapping.length > 0) {
+      throw new BadRequestException("Product is already rented for the selected date range");
+    }
+
     const em = this.productsRepository.getEntityManager();
 
     // Create rental order record
@@ -126,8 +154,8 @@ export class ProductsService {
       status: EOrderStatus.COMPLETED,
       price: product.rentalPrice,
       quantity,
-      rentStartDate: rentStartDate ? new Date(rentStartDate) : new Date(),
-      rentEndDate: rentEndDate ? new Date(rentEndDate) : undefined,
+      rentStartDate: start,
+      rentEndDate: end,
     });
 
     product.quantity -= quantity;

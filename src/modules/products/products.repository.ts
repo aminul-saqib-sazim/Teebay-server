@@ -4,7 +4,6 @@ import { Product } from "@/common/entities/products.entity";
 import { EProductListingType } from "@/common/enums/products.enums";
 import { CustomSQLBaseRepository } from "@/common/repository/custom-sql-base.repository";
 
-
 import { IGetProductsDto } from "./products.dtos";
 
 export class ProductsRepository extends CustomSQLBaseRepository<Product> {
@@ -35,8 +34,7 @@ export class ProductsRepository extends CustomSQLBaseRepository<Product> {
     }
 
     if (listingType) {
-      where.rentOption =
-        listingType === EProductListingType.RENT ? { $ne: null } : { $eq: null };
+      where.rentOption = listingType === EProductListingType.RENT ? { $ne: null } : { $eq: null };
 
       if (Object.keys(priceRange).length > 0) {
         if (listingType === EProductListingType.BUY) {

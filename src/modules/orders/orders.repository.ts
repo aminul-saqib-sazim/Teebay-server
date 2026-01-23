@@ -1,4 +1,7 @@
+import type { FilterQuery } from "@mikro-orm/core";
+
 import { Order } from "@/common/entities/orders.entity";
+import { EOrderType } from "@/common/enums/orders.enums";
 import { CustomSQLBaseRepository } from "@/common/repository/custom-sql-base.repository";
 
 export class OrdersRepository extends CustomSQLBaseRepository<Order> {
@@ -22,5 +25,34 @@ export class OrdersRepository extends CustomSQLBaseRepository<Order> {
       },
     );
     return orders;
+  }
+
+  async findOverlappingRentals(
+    productId: string,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<Order[]> {
+    const where: FilterQuery<Order> = {
+      product: { id: productId },
+      type: EOrderType.RENT,
+      $or: [
+        {
+          rentStartDate: { $lte: endDate },
+          rentEndDate: { $gte: startDate },
+        },
+        {
+          rentStartDate: { $gte: startDate, $lte: endDate },
+        },
+        {
+          rentEndDate: { $gte: startDate, $lte: endDate },
+        },
+      ],
+    };
+
+    const overLappingRents = await this.find(where, {
+      populate: ["product"],
+    });
+
+    return overLappingRents;
   }
 }
