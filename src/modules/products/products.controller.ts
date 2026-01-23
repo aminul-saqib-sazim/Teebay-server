@@ -67,6 +67,6 @@ export class ProductsController {
 
   @Post(":id/rent")
   rent(@Req() req: Request, @Param("id") id: string, @Body() orderProductDto: OrderProductDto) {
-    return this.productsService.rentProduct(id, req.user as User, orderProductDto.quantity);
+    return this.productsService.rentProduct(id, req.user as User, orderProductDto);
   }
 }

@@ -10,7 +10,7 @@ import { User } from "@/common/entities/users.entity";
 import { EOrderStatus, EOrderType } from "@/common/enums/orders.enums";
 import { OrdersRepository } from "@/modules/orders/orders.repository";
 
-import { CreateProductDto, IGetProductsDto, UpdateProductDto } from "./products.dtos";
+import { CreateProductDto, IGetProductsDto, OrderProductDto, UpdateProductDto } from "./products.dtos";
 import { ProductsRepository } from "./products.repository";
 
 @Injectable()
@@ -104,8 +104,9 @@ export class ProductsService {
     return { success: true, message: "Product purchased successfully", orderId: order.id };
   }
 
-  async rentProduct(id: string, user: User, quantity: number) {
+  async rentProduct(id: string, user: User, orderProductDto: OrderProductDto) {
     const product = await this.findOne(id);
+    const { quantity, rentStartDate, rentEndDate } = orderProductDto;
 
     if (user.id === product.owner.id) {
       throw new BadRequestException("You cannot rent your own product");
@@ -125,7 +126,8 @@ export class ProductsService {
       status: EOrderStatus.COMPLETED,
       price: product.rentalPrice,
       quantity,
-      rentStartDate: new Date(),
+      rentStartDate: rentStartDate ? new Date(rentStartDate) : new Date(),
+      rentEndDate: rentEndDate ? new Date(rentEndDate) : undefined,
     });
 
     product.quantity -= quantity;

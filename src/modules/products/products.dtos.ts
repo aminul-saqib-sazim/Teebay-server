@@ -1,7 +1,16 @@
 import { PartialType } from "@nestjs/mapped-types";
 
 import { Type } from "class-transformer";
-import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from "class-validator";
+import {
+  IsArray,
+  IsDateString,
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+} from "class-validator";
 
 import { EProductCategory, EProductListingType, ERentOption } from "@/common/enums/products.enums";
 
@@ -79,4 +88,12 @@ export class OrderProductDto {
   @Min(1)
   @Type(() => Number)
   quantity: number = 1;
+
+  @IsDateString()
+  @IsOptional()
+  rentStartDate?: string;
+
+  @IsDateString()
+  @IsOptional()
+  rentEndDate?: string;
 }
