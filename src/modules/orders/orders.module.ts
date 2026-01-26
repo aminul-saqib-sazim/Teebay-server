@@ -11,6 +11,6 @@ import { OrdersService } from "./orders.service";
   imports: [MikroOrmModule.forFeature([Order])],
   controllers: [OrdersController],
   providers: [OrdersService],
-  exports: [OrdersService],
+  exports: [OrdersService, MikroOrmModule],
 })
 export class OrdersModule {}
