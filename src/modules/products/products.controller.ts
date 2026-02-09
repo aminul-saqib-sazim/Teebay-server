@@ -50,6 +50,11 @@ export class ProductsController {
     return this.productsService.remove(id, req.user as User);
   }
 
+  @Get("categories")
+  getCategories() {
+    return this.productsService.getCategories();
+  }
+
   @Get()
   findAll(@Query() query: IGetProductsDto) {
     return this.productsService.findAll(query);

@@ -10,6 +10,7 @@ import { User } from "@/common/entities/users.entity";
 import { EOrderStatus, EOrderType } from "@/common/enums/orders.enums";
 import { OrdersRepository } from "@/modules/orders/orders.repository";
 
+import { ProductCategoryRepository } from "./product-category.repository";
 import {
   CreateProductDto,
   IGetProductsDto,
@@ -23,6 +24,7 @@ export class ProductsService {
   constructor(
     private readonly productsRepository: ProductsRepository,
     private readonly ordersRepository: OrdersRepository,
+    private readonly productCategoriesRepository: ProductCategoryRepository,
   ) {}
 
   async create(user: User, createProductDto: CreateProductDto) {
@@ -163,5 +165,9 @@ export class ProductsService {
     await em.persistAndFlush([order, product]);
 
     return { success: true, message: "Product rented successfully", orderId: order.id };
+  }
+
+  getCategories() {
+    return this.productCategoriesRepository.findAll();
   }
 }
