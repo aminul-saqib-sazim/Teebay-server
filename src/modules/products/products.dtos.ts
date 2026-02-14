@@ -18,6 +18,7 @@ import {
   ValidatorConstraintInterface,
 } from "class-validator";
 
+import { Product } from "@/common/entities/products.entity";
 import { EProductCategory, EProductListingType, ERentOption } from "@/common/enums/products.enums";
 
 export class CreateProductDto {
@@ -130,4 +131,14 @@ export class OrderProductDto {
   @ValidateIf((o) => o.rentStartDate || o.rentEndDate)
   @Validate(RentDateRangeValidator)
   _validateDateRange?: unknown;
+}
+
+export interface IPaginatedProductsResponse {
+  data: Product[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 }

@@ -62,7 +62,7 @@ export class ProductsController {
 
   @Get(":id")
   findOne(@Param("id") id: string) {
-    return this.productsService.findOne(id);
+    return this.productsService.findOneOrFail(id);
   }
 
   @Post(":id/buy")

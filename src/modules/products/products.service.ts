@@ -14,6 +14,7 @@ import { ProductCategoryRepository } from "./product-category.repository";
 import {
   CreateProductDto,
   IGetProductsDto,
+  IPaginatedProductsResponse,
   OrderProductDto,
   UpdateProductDto,
 } from "./products.dtos";
@@ -25,7 +26,7 @@ export class ProductsService {
     private readonly productsRepository: ProductsRepository,
     private readonly ordersRepository: OrdersRepository,
     private readonly productCategoriesRepository: ProductCategoryRepository,
-  ) {}
+  ) { }
 
   async create(user: User, createProductDto: CreateProductDto) {
     const em = this.productsRepository.getEntityManager();
@@ -40,7 +41,7 @@ export class ProductsService {
   }
 
   async update(id: string, user: User, updateProductDto: UpdateProductDto) {
-    const product = await this.findOne(id);
+    const product = await this.findOneOrFail(id);
 
     if (user.id !== product.owner.id) {
       throw new ForbiddenException("You are not allowed to update this product");
@@ -51,7 +52,7 @@ export class ProductsService {
     return product;
   }
 
-  async findOne(id: string) {
+  async findOneOrFail(id: string) {
     const product = await this.productsRepository.findOne({ id }, { populate: ["owner"] });
     if (!product) {
       throw new NotFoundException("Product not found");
@@ -60,7 +61,7 @@ export class ProductsService {
   }
 
   async remove(id: string, user: User) {
-    const product = await this.findOne(id);
+    const product = await this.findOneOrFail(id);
 
     if (user.id !== product.owner.id) {
       throw new ForbiddenException("You are not allowed to delete this product");
@@ -77,12 +78,33 @@ export class ProductsService {
     return { success: true };
   }
 
-  findAll(options: IGetProductsDto): Promise<{ products: Product[]; total: number }> {
-    return this.productsRepository.findAllPaginated(options);
+  async findAll(query: IGetProductsDto): Promise<IPaginatedProductsResponse> {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
+
+    const { products, total } = await this.productsRepository.findAllPaginated({
+      page,
+      limit,
+      search: query.search,
+      category: query.category,
+      listingType: query.listingType,
+      minPrice: query.minPrice,
+      maxPrice: query.maxPrice,
+    });
+
+    return {
+      data: products,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async buyProduct(id: string, user: User, quantity: number) {
-    const product = await this.findOne(id);
+    const product = await this.findOneOrFail(id);
 
     if (user.id === product.owner.id) {
       throw new BadRequestException("You cannot buy your own product");
@@ -112,7 +134,7 @@ export class ProductsService {
   }
 
   async rentProduct(id: string, user: User, orderProductDto: OrderProductDto) {
-    const product = await this.findOne(id);
+    const product = await this.findOneOrFail(id);
     const { quantity, rentStartDate, rentEndDate } = orderProductDto;
 
     if (user.id === product.owner.id) {

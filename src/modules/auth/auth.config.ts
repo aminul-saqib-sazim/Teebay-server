@@ -111,6 +111,10 @@ export function createAuthInstance({
       level: "error",
     },
 
+    rateLimit: {
+      enabled: !process.env.VITEST,
+    },
+
     advanced: {
       database: { generateId: false },
     },
