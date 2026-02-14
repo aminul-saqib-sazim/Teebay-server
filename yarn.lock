@@ -1528,14 +1528,23 @@
     knex "3.1.0"
     sqlstring "2.3.3"
 
-"@mikro-orm/migrations@~6.2.0":
-  version "6.2.9"
-  resolved "https://registry.yarnpkg.com/@mikro-orm/migrations/-/migrations-6.2.9.tgz#c88715510022e377549883c6bcc29eae4d6910cb"
-  integrity sha512-QDaYjKxzeGxHhbdP4KDGjD1NM1n6UwRHBjnx+cIB/bLo0sGIcVhT8ajVFKwULweh5bf9iSn9U9/OiU+Ykem/Jg==
+"@mikro-orm/knex@6.6.6":
+  version "6.6.6"
+  resolved "https://registry.yarnpkg.com/@mikro-orm/knex/-/knex-6.6.6.tgz#16c632a35d9fb8f83eae55ba3a03bab3e9274b81"
+  integrity sha512-lqrWnDY+q4femxEW0kixTkBRbIwHtkS42RkjMwL5MhvQFdAgfAmS81sHSA7R03zW87htw4anxE+6Za6WQP0y+A==
   dependencies:
-    "@mikro-orm/knex" "6.2.9"
-    fs-extra "11.2.0"
-    umzug "3.8.0"
+    fs-extra "11.3.3"
+    knex "3.1.0"
+    sqlstring "2.3.3"
+
+"@mikro-orm/migrations@~6.6.6":
+  version "6.6.6"
+  resolved "https://registry.yarnpkg.com/@mikro-orm/migrations/-/migrations-6.6.6.tgz#696c96b380c326f0e9b7252915174aa87821335a"
+  integrity sha512-ufyDm/a5/x01PcqC76naogMgQ8FiuPtUbWLU/BccQo1RVovi/u9Bddz7R9+nIb2Uh07VZ6lzVMEBOcLbCBZzkg==
+  dependencies:
+    "@mikro-orm/knex" "6.6.6"
+    fs-extra "11.3.3"
+    umzug "3.8.2"
 
 "@mikro-orm/nestjs@^5.2.3":
   version "5.2.3"
@@ -5869,10 +5878,19 @@ fresh@0.5.2:
   resolved "https://registry.yarnpkg.com/fresh/-/fresh-0.5.2.tgz#3d8cadd90d976569fa835ab1f8e4b23a105605a7"
   integrity sha512-zJ2mQYM18rEFOudeV4GShTGIQ7RbzA7ozbU9I/XBpm7kqgMywgmylMwXHxZJmkVoYkna9d2pVXVXPdYTP9ej8Q==
 
-fs-extra@11.2.0, fs-extra@^11.0.0:
+fs-extra@11.2.0:
   version "11.2.0"
   resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-11.2.0.tgz#e70e17dfad64232287d01929399e0ea7c86b0e5b"
   integrity sha512-PmDi3uwK5nFuXh7XDTlVnS17xJS7vW36is2+w3xcv8SVxiB4NyATf4ctkVY5bkSjX0Y4nbvZCq1/EjtEyr9ktw==
+  dependencies:
+    graceful-fs "^4.2.0"
+    jsonfile "^6.0.1"
+    universalify "^2.0.0"
+
+fs-extra@11.3.3, fs-extra@^11.0.0:
+  version "11.3.3"
+  resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-11.3.3.tgz#a27da23b72524e81ac6c3815cc0179b8c74c59ee"
+  integrity sha512-VWSRii4t0AFm6ixFFmLLx1t7wS1gh+ckoa84aOeapGum0h+EZd1EhEumSB+ZdDLnEPuucsVB9oB7cxJHap6Afg==
   dependencies:
     graceful-fs "^4.2.0"
     jsonfile "^6.0.1"
@@ -9049,10 +9067,10 @@ uid@2.0.2:
   dependencies:
     "@lukeed/csprng" "^1.0.0"
 
-umzug@3.8.0:
-  version "3.8.0"
-  resolved "https://registry.yarnpkg.com/umzug/-/umzug-3.8.0.tgz#dfe2d753141f155f30106b2b893e355fed0c645f"
-  integrity sha512-FRBvdZxllW3eUzsqG3CIfgOVChUONrKNZozNOJfvmcfBn5pMKcJjICuMMEsDLHYa/aqd7a2NtXfYEG86XHe1lQ==
+umzug@3.8.2:
+  version "3.8.2"
+  resolved "https://registry.yarnpkg.com/umzug/-/umzug-3.8.2.tgz#53c2189604d36956d7b75a89128108d0e3073a9f"
+  integrity sha512-BEWEF8OJjTYVC56GjELeHl/1XjFejrD7aHzn+HldRJTx+pL1siBrKHZC8n4K/xL3bEzVA9o++qD1tK2CpZu4KA==
   dependencies:
     "@rushstack/ts-command-line" "^4.12.2"
     emittery "^0.13.0"
