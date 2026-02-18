@@ -1,17 +1,14 @@
-import {
-  Controller,
-  Post,
-  Body,
-  Req,
-} from "@nestjs/common";
+import { Controller, Post, Body, Patch, Param, UseGuards, Req } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 
 import type { Request } from "express";
 
-import { Product } from "@/common/entities/products.entity";
+import { Permissions } from "@/common/decorators/auth/permissions.decorator";
 import { User } from "@/common/entities/users.entity";
+import { PermissionsGuard } from "@/common/guards/permissions.guard";
 
-import { CreateProductDto } from "./products.dtos";
+import { EPermission } from "../permissions/permissions.enums";
+import { CreateProductDto, UpdateProductDto } from "./products.dtos";
 import { ProductsService } from "./products.service";
 
 @ApiTags("Products")
@@ -20,7 +17,16 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) { }
 
   @Post()
-  create(@Req() req: Request, @Body() createProductDto: CreateProductDto): Promise<Product> {
+  @UseGuards(PermissionsGuard)
+  @Permissions({ product: [EPermission.CREATE] })
+  create(@Req() req: Request, @Body() createProductDto: CreateProductDto) {
     return this.productsService.create(req.user as User, createProductDto);
+  }
+
+  @Patch(":id")
+  @UseGuards(PermissionsGuard)
+  @Permissions({ product: [EPermission.UPDATE] })
+  update(@Req() req: Request, @Param("id") id: string, @Body() updateProductDto: UpdateProductDto) {
+    return this.productsService.update(id, req.user as User, updateProductDto);
   }
 }
