@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 
 import { User } from "@/common/entities/users.entity";
 
@@ -39,5 +43,16 @@ export class ProductsService {
       throw new NotFoundException("Product not found");
     }
     return product;
+  }
+
+  async remove(id: string, user: User) {
+    const product = await this.findOne(id);
+
+    if (user.id !== product.owner.id && !this.isAdmin(user)) {
+      throw new ForbiddenException("You are not allowed to delete this product");
+    }
+
+    await this.productsRepository.getEntityManager().removeAndFlush(product);
+    return { success: true };
   }
 }
