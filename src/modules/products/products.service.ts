@@ -1,12 +1,9 @@
-import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from "@nestjs/common";
+import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 
+import { Product } from "@/common/entities/products.entity";
 import { User } from "@/common/entities/users.entity";
 
-import { CreateProductDto, UpdateProductDto } from "./products.dtos";
+import { CreateProductDto, IGetProductsDto, UpdateProductDto } from "./products.dtos";
 import { ProductsRepository } from "./products.repository";
 
 @Injectable()
@@ -54,5 +51,15 @@ export class ProductsService {
 
     await this.productsRepository.getEntityManager().removeAndFlush(product);
     return { success: true };
+  }
+
+  findAll(options: IGetProductsDto): Promise<{ products: Product[]; total: number }> {
+    return this.productsRepository.findAllPaginated(options);
+  }
+
+  private isAdmin(user: User): boolean {
+    console.log(user);
+    // TODO: will check user role later
+    return false;
   }
 }

@@ -1,10 +1,12 @@
 import {
   Controller,
+  Get,
   Post,
   Body,
   Patch,
   Param,
   Delete,
+  Query,
   UseGuards,
   Req,
 } from "@nestjs/common";
@@ -17,7 +19,7 @@ import { User } from "@/common/entities/users.entity";
 import { PermissionsGuard } from "@/common/guards/permissions.guard";
 
 import { EPermission } from "../permissions/permissions.enums";
-import { CreateProductDto, UpdateProductDto } from "./products.dtos";
+import { CreateProductDto, IGetProductsDto, UpdateProductDto } from "./products.dtos";
 import { ProductsService } from "./products.service";
 
 @ApiTags("Products")
@@ -43,5 +45,10 @@ export class ProductsController {
   @UseGuards(PermissionsGuard)
   remove(@Req() req: Request, @Param("id") id: string) {
     return this.productsService.remove(id, req.user as User);
+  }
+
+  @Get()
+  findAll(@Query() query: IGetProductsDto) {
+    return this.productsService.findAll(query);
   }
 }
