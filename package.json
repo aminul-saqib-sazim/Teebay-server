@@ -74,7 +74,7 @@
     "axios": "^1.7.7",
     "better-auth": "~1.4.12",
     "class-transformer": "^0.5.1",
-    "class-validator": "^0.14.0",
+    "class-validator": "^0.14.3",
     "dayjs": "^1.11.10",
     "dset": "^3.1.4",
     "google-auth-library": "^9.15.0",
