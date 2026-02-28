@@ -77,7 +77,7 @@
     "class-validator": "^0.14.0",
     "dayjs": "^1.11.10",
     "dset": "^3.1.4",
-    "google-auth-library": "^9.15.0",
+    "google-auth-library": "^10.6.1",
     "helmet": "^7.1.0",
     "nest-winston": "^1.8.0",
     "passport": "^0.6.0",
