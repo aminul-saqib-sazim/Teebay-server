@@ -1,6 +1,6 @@
 import { Entity, Enum, ManyToOne, PrimaryKey, Property } from "@mikro-orm/core";
 
-import { EProductCategory } from "@/common/enums/products.enums";
+import { EProductCategory, ERentOption } from "@/common/enums/products.enums";
 import { ProductsRepository } from "@/modules/products/products.repository";
 
 import { CustomBaseEntity } from "./custom-base.entity";
@@ -19,6 +19,12 @@ export class Product extends CustomBaseEntity {
 
   @Property({ type: "decimal", precision: 10, scale: 2 })
   price!: number;
+
+  @Property({ type: "decimal", precision: 10, scale: 2 })
+  rentalPrice!: number;
+
+  @Enum({ items: () => ERentOption, nullable: true })
+  rentOption?: ERentOption;
 
   @Property()
   quantity!: number;
