@@ -8,6 +8,8 @@ import type { Request } from "express";
 
 import { IS_PUBLIC_KEY } from "@/common/decorators/auth/public.decorator";
 import { Member } from "@/common/entities/members.entity";
+import { Organization } from "@/common/entities/organizations.entity";
+import { EUserRole } from "@/common/enums/roles.enums";
 import { EUserState } from "@/common/enums/users.enums";
 import { AuthService } from "@/modules/auth/auth.service";
 
@@ -54,13 +56,25 @@ export class SessionGuard implements CanActivate {
       }
 
       const enrichedSession = { ...session, session: { ...session.session } };
-      if (session.session.activeOrganizationId && !session.session.activeOrganizationRole) {
+
+      if (
+        enrichedSession.session.activeOrganizationId &&
+        !enrichedSession.session.activeOrganizationRole
+      ) {
         const member = await this.em.findOne(Member, {
           user: session.user.id,
-          organization: session.session.activeOrganizationId,
+          organization: enrichedSession.session.activeOrganizationId,
         });
+
         if (member) {
           enrichedSession.session.activeOrganizationRole = member.role;
+        } else {
+          const defaultOrg = await this.em.findOne(Organization, {
+            slug: "default-organization",
+          });
+          if (defaultOrg && enrichedSession.session.activeOrganizationId === defaultOrg.id) {
+            enrichedSession.session.activeOrganizationRole = EUserRole.MEMBER;
+          }
         }
       }
 

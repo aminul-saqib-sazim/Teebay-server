@@ -2,6 +2,8 @@ import { betterAuth } from "better-auth";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { bearer, organization } from "better-auth/plugins";
 
+import { Member } from "@/common/entities/members.entity";
+import { Organization } from "@/common/entities/organizations.entity";
 import { User } from "@/common/entities/users.entity";
 import { EUserState } from "@/common/enums/users.enums";
 import { ac, admin, member, owner } from "@/modules/permissions/permissions.constants";
@@ -29,14 +31,14 @@ export function createAuthInstance({
     emailAndPassword: {
       enabled: true,
       autoSignIn: true,
-      requireEmailVerification: true,
+      requireEmailVerification: false,
       sendResetPassword: async ({ user, token }) => {
         await emailSenders.sendResetPasswordEmail(user, token);
       },
     },
 
     emailVerification: {
-      sendOnSignUp: true,
+      sendOnSignUp: false,
       autoSignInAfterVerification: true,
       sendVerificationEmail: async ({ user, token }) => {
         await emailSenders.sendVerificationEmail(user, token);
@@ -109,11 +111,16 @@ export function createAuthInstance({
       level: "error",
     },
 
+    rateLimit: {
+      enabled: !process.env.VITEST,
+    },
+
     advanced: {
       database: { generateId: false },
     },
 
     hooks: {
+      // eslint-disable-next-line require-await
       after: createAuthMiddleware(async (ctx) => {
         if (ctx.path.startsWith("/callback")) {
           const newSession = ctx.context.newSession;
@@ -138,6 +145,16 @@ export function createAuthInstance({
               throw new APIError("FORBIDDEN", {
                 message: "Your account has been deactivated. Please contact an administrator.",
               });
+            }
+
+            const member = await em.findOne(Member, { user: session.userId });
+            if (member) {
+              session.activeOrganizationId = member.organization.id;
+            } else {
+              const defaultOrg = await em.findOne(Organization, { slug: "default-organization" });
+              if (defaultOrg) {
+                session.activeOrganizationId = defaultOrg.id;
+              }
             }
 
             return { data: session };
